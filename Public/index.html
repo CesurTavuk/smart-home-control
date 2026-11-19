@@ -1,0 +1,393 @@
+
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#101827">
+<title>SMART HOME CONTROL</title>
+
+<style>
+:root {
+ --bg:#0b1220;
+ --panel:#172338;
+ --line:#2c405d;
+ --text:#f4f7ff;
+ --muted:#9eafc5;
+ --green:#20c987;
+ --red:#ed5c72;
+ --blue:#477fe5;
+}
+*{box-sizing:border-box}
+body{
+ margin:0;
+ background:radial-gradient(circle at top,#203653,#0b1220 65%);
+ color:var(--text);
+ font-family:Arial,sans-serif;
+ min-height:100vh;
+}
+.container{
+ max-width:1100px;
+ margin:auto;
+ padding:22px;
+}
+header{
+ display:flex;
+ justify-content:space-between;
+ align-items:center;
+ gap:12px;
+ margin-bottom:22px;
+}
+h1{font-size:24px;margin:0}
+.subtitle{color:var(--muted);font-size:13px;margin-top:5px}
+.panel{
+ background:var(--panel);
+ border:1px solid var(--line);
+ border-radius:22px;
+ padding:24px;
+ margin-bottom:18px;
+}
+.layout{
+ display:grid;
+ grid-template-columns:1.3fr .7fr;
+ gap:18px;
+}
+.status{
+ border:1px solid var(--line);
+ border-radius:30px;
+ padding:8px 14px;
+ font-size:12px;
+ color:var(--muted);
+}
+.light-area{
+ display:grid;
+ place-items:center;
+ min-height:240px;
+}
+.lamp{
+ width:150px;
+ height:150px;
+ border-radius:50%;
+ background:#25364d;
+ border:2px solid #405571;
+ display:grid;
+ place-items:center;
+ font-size:65px;
+ transition:.3s;
+}
+.lamp.on{
+ background:#ffd76a;
+ color:#fff;
+ box-shadow:0 0 35px #ffd76a,0 0 90px #ffd76a66;
+}
+.state{
+ text-align:center;
+ font-size:25px;
+ font-weight:bold;
+ margin:5px;
+}
+.description{
+ text-align:center;
+ color:var(--muted);
+ font-size:13px;
+}
+.controls{
+ display:grid;
+ grid-template-columns:1fr 1fr;
+ gap:12px;
+ margin-top:25px;
+}
+button{
+ border:0;
+ border-radius:15px;
+ padding:18px 10px;
+ color:white;
+ font-size:16px;
+ font-weight:bold;
+ cursor:pointer;
+}
+button:disabled{opacity:.4}
+.on{background:var(--green)}
+.off{background:var(--red)}
+.toggle{
+ grid-column:1/-1;
+ background:var(--blue);
+}
+.info{
+ display:flex;
+ justify-content:space-between;
+ padding:13px 0;
+ border-bottom:1px solid var(--line);
+ gap:10px;
+ font-size:14px;
+}
+.info span:first-child{color:var(--muted)}
+.settings input{
+ width:100%;
+ padding:13px;
+ margin:7px 0 14px;
+ border:1px solid var(--line);
+ background:#0b1628;
+ color:white;
+ border-radius:10px;
+ font-size:14px;
+}
+.save{
+ width:100%;
+ background:#344b6c;
+}
+.note{
+ color:var(--muted);
+ font-size:12px;
+ line-height:1.6;
+ margin-top:15px;
+}
+footer{
+ text-align:center;
+ color:#8293aa;
+ font-size:12px;
+ padding:15px;
+}
+#message{
+ position:fixed;
+ bottom:20px;
+ left:50%;
+ transform:translateX(-50%);
+ background:#263b59;
+ padding:13px 20px;
+ border-radius:12px;
+ display:none;
+ max-width:90%;
+}
+@media(max-width:750px){
+ .layout{grid-template-columns:1fr}
+ .container{padding:13px}
+ h1{font-size:19px}
+}
+</style>
+</head>
+
+<body>
+<div class="container">
+
+<header>
+ <div>
+  <h1>⌂ SMART HOME CONTROL</h1>
+  <div class="subtitle">Akıllı ev kontrol merkezi</div>
+ </div>
+ <div id="connection" class="status">● Sunucu bekleniyor</div>
+</header>
+
+<div class="layout">
+
+<section class="panel">
+ <h2>Oturma Odası</h2>
+ <p class="subtitle">Aydınlatma kontrolü · Röle 01</p>
+
+ <div class="light-area">
+  <div id="lamp" class="lamp">💡</div>
+ </div>
+
+ <div id="state" class="state">DURUM BİLİNMİYOR</div>
+ <div id="description" class="description">
+  Arduino bağlantısı bekleniyor
+ </div>
+
+ <div class="controls">
+  <button class="on" id="onBtn">⏻ IŞIĞI AÇ</button>
+  <button class="off" id="offBtn">IŞIĞI KAPAT</button>
+  <button class="toggle" id="toggleBtn">⇄ AÇ / KAPAT</button>
+ </div>
+</section>
+
+<aside>
+
+<section class="panel">
+ <h3>Sistem durumu</h3>
+
+ <div class="info">
+  <span>Bluetooth köprüsü</span>
+  <strong id="bridge">Bekleniyor</strong>
+ </div>
+
+ <div class="info">
+  <span>Röle durumu</span>
+  <strong id="relay">Bilinmiyor</strong>
+ </div>
+
+ <div class="info">
+  <span>Son güncelleme</span>
+  <strong id="updated">—</strong>
+ </div>
+
+ <div class="info">
+  <span>Komut</span>
+  <strong id="command">Beklemede</strong>
+ </div>
+</section>
+
+<section class="panel settings">
+ <h3>Sunucu bağlantısı</h3>
+
+ <label>Cloudflare Worker adresi</label>
+ <input id="api" placeholder="https://proje.workers.dev">
+
+ <label>Kontrol anahtarı</label>
+ <input id="token" type="password" placeholder="CONTROL_TOKEN">
+
+ <button class="save" id="save">AYARLARI KAYDET</button>
+
+ <div class="note">
+  Bu panel GitHub Pages üzerinde çalışır.
+  Arduino UNO ve HC-05 bağlantısı için Android Bluetooth
+  köprü uygulaması gereklidir.
+ </div>
+</section>
+
+</aside>
+</div>
+
+<footer>SMART HOME CONTROL · GitHub + Cloudflare</footer>
+</div>
+
+<div id="message"></div>
+
+<script>
+const $ = id => document.getElementById(id);
+
+let apiAddress = localStorage.getItem("sh_api") || "";
+let token = localStorage.getItem("sh_token") || "";
+let actual = null;
+let busy = false;
+
+$("api").value = apiAddress;
+$("token").value = token;
+
+function message(text){
+ $("message").textContent = text;
+ $("message").style.display = "block";
+ setTimeout(() => $("message").style.display = "none",2600);
+}
+
+function headers(){
+ return {
+  "Content-Type":"application/json",
+  "Authorization":"Bearer " + token
+ };
+}
+
+async function request(path,options={}){
+ if(!apiAddress || !token)
+  throw new Error("Önce sunucu bağlantısını ayarla.");
+
+ const response = await fetch(apiAddress + path,{
+  ...options,
+  headers:{...headers(),...(options.headers || {})}
+ });
+
+ const data = await response.json();
+
+ if(!response.ok)
+  throw new Error(data.error || "Sunucu hatası");
+
+ return data;
+}
+
+function render(data){
+ actual = data.actual;
+
+ const known = actual === "ON" || actual === "OFF";
+ const isOn = actual === "ON";
+
+ $("lamp").classList.toggle("on",isOn);
+
+ $("state").textContent =
+  known ? (isOn ? "IŞIK AÇIK" : "IŞIK KAPALI") :
+  "DURUM BİLİNMİYOR";
+
+ $("description").textContent =
+  known ? "Arduino röle durumu" :
+  "Arduino köprüsünden durum bekleniyor";
+
+ $("relay").textContent =
+  known ? (isOn ? "AÇIK" : "KAPALI") : "Bilinmiyor";
+
+ $("bridge").textContent =
+  data.bridgeOnline ? "Bağlı" : "Bağlantı bekleniyor";
+
+ $("updated").textContent =
+  data.updatedAt ?
+  new Date(data.updatedAt).toLocaleTimeString("tr-TR") : "—";
+
+ $("command").textContent =
+  data.target === data.actual ? "Senkron" : "Komut bekliyor";
+
+ $("connection").textContent = "● Sunucu çevrimiçi";
+ $("connection").style.color = "#20c987";
+
+ $("toggleBtn").disabled = !known || busy;
+ $("onBtn").disabled = busy;
+ $("offBtn").disabled = busy;
+}
+
+async function refresh(){
+ try{
+  const data = await request("/api/state");
+  render(data);
+ }catch(error){
+  $("connection").textContent = "● Bağlantı yok";
+  $("connection").style.color = "#ed5c72";
+  $("command").textContent = error.message;
+ }
+}
+
+async function sendCommand(state){
+ if(busy) return;
+
+ busy = true;
+ $("onBtn").disabled = true;
+ $("offBtn").disabled = true;
+ $("toggleBtn").disabled = true;
+
+ try{
+  await request("/api/command",{
+   method:"POST",
+   body:JSON.stringify({state})
+  });
+
+  message(state === "ON" ?
+   "Açma komutu gönderildi" :
+   "Kapatma komutu gönderildi");
+
+ }catch(error){
+  message(error.message);
+ }
+
+ busy = false;
+ await refresh();
+}
+
+$("onBtn").onclick = () => sendCommand("ON");
+$("offBtn").onclick = () => sendCommand("OFF");
+
+$("toggleBtn").onclick = () => {
+ if(actual === "ON") sendCommand("OFF");
+ else if(actual === "OFF") sendCommand("ON");
+};
+
+$("save").onclick = () => {
+ apiAddress = $("api").value.trim().replace(/\/+$/,"");
+ token = $("token").value.trim();
+
+ localStorage.setItem("sh_api",apiAddress);
+ localStorage.setItem("sh_token",token);
+
+ message("Bağlantı ayarları kaydedildi");
+ refresh();
+};
+
+refresh();
+setInterval(refresh,2500);
+</script>
+</body>
+</html>
