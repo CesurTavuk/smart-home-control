@@ -1,5 +1,5 @@
 
-const corsHeaders = {
+const cors = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
   "Access-Control-Allow-Headers": "Content-Type, Authorization"
@@ -10,40 +10,45 @@ function json(data, status = 200) {
     status,
     headers: {
       "Content-Type": "application/json; charset=utf-8",
-      ...corsHeaders
+      ...cors
     }
   });
 }
 
 function authorized(request, env) {
-  const auth = request.headers.get("Authorization") || "";
-  return !!env.CONTROL_TOKEN &&
-    auth === `Bearer ${env.CONTROL_TOKEN}`;
+  return request.headers.get("Authorization") ===
+    `Bearer ${env.CONTROL_TOKEN}`;
+}
+
+function initialState() {
+  return {
+    target: {
+      led1: { on: false, brightness: 100 },
+      led2: { on: false, brightness: 100 }
+    },
+    actual: {
+      led1: { on: false, brightness: 0 },
+      led2: { on: false, brightness: 0 }
+    },
+    version: 0,
+    lastSeen: 0
+  };
 }
 
 async function readState(env) {
-  const raw = await env.SMART_HOME_KV.get("state");
-
-  if (!raw) {
-    return {
-      actual: "UNKNOWN",
-      target: "OFF",
-      version: 0,
-      updatedAt: null,
-      lastSeen: 0
-    };
-  }
+  const raw = await env.SMART_HOME_KV.get("smart-home-state");
+  if (!raw) return initialState();
 
   try {
     return JSON.parse(raw);
   } catch {
-    throw new Error("Sunucu durum verisi okunamadı.");
+    return initialState();
   }
 }
 
 async function saveState(env, state) {
   await env.SMART_HOME_KV.put(
-    "state",
+    "smart-home-state",
     JSON.stringify(state)
   );
 }
@@ -54,149 +59,109 @@ export default {
     const path = url.pathname;
 
     if (request.method === "OPTIONS") {
-      return new Response(null, {
-        status: 204,
-        headers: corsHeaders
-      });
+      return new Response(null, { status: 204, headers: cors });
     }
 
-    // Sağlık kontrolü
-    if (path === "/api/health" && request.method === "GET") {
+    if (path === "/api/health") {
       return json({
         ok: true,
         app: "SMART HOME CONTROL",
-        version: "1.0.0"
+        version: "2.0.0"
       });
     }
 
-    // API dışındaki adresleri statik dosya sunucusuna aktar.
     if (!path.startsWith("/api/")) {
       return env.ASSETS.fetch(request);
     }
 
     if (!authorized(request, env)) {
-      return json({
-        ok: false,
-        error: "Yetkisiz erişim. Kontrol anahtarını kontrol et."
-      }, 401);
+      return json({ ok: false, error: "Kontrol anahtarı hatalı." }, 401);
     }
 
     try {
-      // Panel mevcut röle durumunu öğrenir.
+      const state = await readState(env);
+
       if (path === "/api/state" && request.method === "GET") {
-        const s = await readState(env);
-
-        const bridgeOnline =
-          !!s.lastSeen &&
-          Date.now() - s.lastSeen < 15000;
-
         return json({
           ok: true,
-          actual: s.actual,
-          target: s.target,
-          version: s.version,
-          updatedAt: s.updatedAt,
-          bridgeOnline
+          target: state.target,
+          actual: state.actual,
+          version: state.version,
+          bridgeOnline: Date.now() - state.lastSeen < 15000
         });
       }
 
-      // Panel açma veya kapatma komutu gönderir.
       if (path === "/api/command" && request.method === "POST") {
-        let body;
+        const body = await request.json();
+        const led = `led${body.led}`;
 
-        try {
-          body = await request.json();
-        } catch {
-          return json({ ok: false, error: "Geçersiz JSON." }, 400);
+        if (!["led1", "led2"].includes(led)) {
+          return json({ ok: false, error: "LED numarası 1 veya 2 olmalı." }, 400);
         }
 
-        if (!["ON", "OFF"].includes(body.state)) {
-          return json({
-            ok: false,
-            error: "state değeri ON veya OFF olmalı."
-          }, 400);
+        const item = state.target[led];
+
+        if (body.action === "on") {
+          item.on = true;
+          if (item.brightness === 0) item.brightness = 100;
+        } else if (body.action === "off") {
+          item.on = false;
+        } else if (body.action === "brightness") {
+          const value = Number(body.brightness);
+
+          if (!Number.isFinite(value) || value < 0 || value > 100) {
+            return json({ ok: false, error: "Parlaklık 0-100 arasında olmalı." }, 400);
+          }
+
+          item.brightness = Math.round(value);
+          item.on = item.brightness > 0;
+        } else {
+          return json({ ok: false, error: "Geçersiz komut." }, 400);
         }
 
-        const s = await readState(env);
-
-        s.target = body.state;
-        s.version = (s.version || 0) + 1;
-        s.updatedAt = new Date().toISOString();
-
-        await saveState(env, s);
+        state.version++;
+        await saveState(env, state);
 
         return json({
           ok: true,
-          target: s.target,
-          version: s.version
+          target: state.target,
+          version: state.version
         });
       }
 
-      // Android Bluetooth köprüsü bu adresi düzenli sorgular.
       if (path === "/api/poll" && request.method === "GET") {
-        const s = await readState(env);
-
-        s.lastSeen = Date.now();
-        await saveState(env, s);
+        state.lastSeen = Date.now();
+        await saveState(env, state);
 
         return json({
           ok: true,
-          target: s.target,
-          version: s.version,
-          actual: s.actual
+          target: state.target,
+          version: state.version
         });
       }
 
-      // Android köprüsü Arduino'nun gerçek durumunu bildirir.
       if (path === "/api/report" && request.method === "POST") {
-        let body;
+        const body = await request.json();
 
-        try {
-          body = await request.json();
-        } catch {
-          return json({ ok: false, error: "Geçersiz JSON." }, 400);
+        for (const led of ["led1", "led2"]) {
+          if (body[led]) {
+            state.actual[led] = {
+              on: !!body[led].on,
+              brightness: Math.max(
+                0,
+                Math.min(100, Math.round(Number(body[led].brightness) || 0))
+              )
+            };
+          }
         }
 
-        if (
-          !["ON", "OFF"].includes(body.state) ||
-          !Number.isInteger(body.version)
-        ) {
-          return json({
-            ok: false,
-            error: "state ve version bilgisi gerekli."
-          }, 400);
-        }
+        state.lastSeen = Date.now();
+        await saveState(env, state);
 
-        const s = await readState(env);
-
-        s.actual = body.state;
-        s.lastSeen = Date.now();
-        s.updatedAt = new Date().toISOString();
-
-        // IR kumandasıyla değişen fiziksel durumu da kaydet.
-        if (
-          body.version === s.version &&
-          s.actual !== s.target
-        ) {
-          s.target = s.actual;
-          s.version++;
-        }
-
-        await saveState(env, s);
-
-        return json({
-          ok: true,
-          actual: s.actual,
-          target: s.target,
-          version: s.version
-        });
+        return json({ ok: true });
       }
 
-      return json({
-        ok: false,
-        error: "API adresi bulunamadı."
-      }, 404);
-
+      return json({ ok: false, error: "API adresi bulunamadı." }, 404);
     } catch (error) {
       return json({
         ok: false,
