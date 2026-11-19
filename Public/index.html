@@ -6,111 +6,56 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#101827">
 <title>SMART HOME CONTROL</title>
-
 <style>
 :root{
-  --bg:#0b1220;
-  --panel:#172338;
-  --panel2:#22334c;
-  --text:#f4f7fb;
-  --muted:#9aabc1;
-  --accent:#f4bd35;
-  --green:#35d39a;
-  --red:#f47777;
+ --bg:#0b1220;--panel:#172338;--panel2:#22334c;
+ --text:#f4f7fb;--muted:#9aabc1;
+ --accent:#f4bd35;--green:#35d39a;--red:#f47777;
 }
 *{box-sizing:border-box}
-body{
-  margin:0;background:var(--bg);color:var(--text);
-  font-family:Arial,sans-serif;min-height:100vh;
-}
+body{margin:0;background:var(--bg);color:var(--text);font-family:Arial,sans-serif;min-height:100vh}
 button,input{font:inherit}
 button{cursor:pointer}
 .hidden{display:none!important}
 
-/* GİRİŞ */
-#loginScreen{
-  min-height:100vh;display:flex;align-items:center;
-  justify-content:center;padding:20px;
-}
-.login-card{
-  width:100%;max-width:390px;background:var(--panel);
-  border:1px solid #293950;border-radius:25px;
-  padding:30px;text-align:center;
-}
+/* LOGIN */
+#loginScreen{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}
+.login-card{width:100%;max-width:390px;background:var(--panel);border:1px solid #293950;border-radius:25px;padding:30px;text-align:center}
 .logo-icon{font-size:45px;margin-bottom:12px}
 .login-card h1{font-size:23px;margin:0}
 .login-card h1 span{color:var(--accent)}
 .login-card p{color:var(--muted);font-size:13px}
-.login-card input{
-  width:100%;padding:15px;margin-top:18px;
-  border-radius:12px;border:1px solid #40516b;
-  background:#0d1727;color:white;outline:none;
-}
-.primary{
-  width:100%;padding:15px;margin-top:12px;
-  border:0;border-radius:12px;background:var(--accent);
-  color:#171717;font-weight:800;
-}
-.login-error{color:var(--red);font-size:13px;min-height:18px}
+.login-card input{width:100%;padding:15px;margin-top:18px;border-radius:12px;border:1px solid #40516b;background:#0d1727;color:white;outline:none}
+.primary{width:100%;padding:15px;margin-top:12px;border:0;border-radius:12px;background:var(--accent);color:#171717;font-weight:800}
+.login-error{color:var(--red);font-size:13px;min-height:18px;margin-top:10px}
 
-/* PANEL */
-header{
-  display:flex;align-items:center;justify-content:space-between;
-  gap:12px;padding:20px 24px;border-bottom:1px solid #29374d;
-}
+/* HEADER */
+header{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:20px 24px;border-bottom:1px solid #29374d}
 .brand{font-size:20px;font-weight:800;letter-spacing:1px}
 .brand span{color:var(--accent)}
 .header-right{display:flex;align-items:center;gap:15px}
 .status{font-size:12px;color:var(--muted)}
-.status i{
-  display:inline-block;width:8px;height:8px;
-  border-radius:50%;background:var(--red);margin-right:6px;
-}
+.status i{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--red);margin-right:6px}
 .status.online i{background:var(--green)}
-.logout{
-  padding:9px 12px;border:1px solid #40516b;
-  border-radius:9px;background:transparent;color:white;
-  font-size:12px;
-}
+.logout{padding:9px 12px;border:1px solid #40516b;border-radius:9px;background:transparent;color:white;font-size:12px}
+
 main{max-width:1100px;margin:auto;padding:22px}
-.cards{
-  display:grid;grid-template-columns:repeat(2,minmax(0,1fr));
-  gap:18px;
-}
-.card{
-  background:var(--panel);border:1px solid #293950;
-  border-radius:22px;padding:20px;min-width:0;
-}
+.cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}
+.card{background:var(--panel);border:1px solid #293950;border-radius:22px;padding:20px;min-width:0}
 .card-head{display:flex;justify-content:space-between;align-items:center}
 .card h2{margin:0;font-size:20px}
-.state{
-  font-size:12px;padding:7px 12px;border-radius:30px;
-  background:#303b4c;color:var(--muted)
-}
+.state{font-size:12px;padding:7px 12px;border-radius:30px;background:#303b4c;color:var(--muted)}
 .state.on{background:#123d35;color:var(--green)}
-.gauge{
-  width:min(100%,340px);margin:18px auto 5px;position:relative;
-}
+
+.gauge{width:min(100%,340px);margin:18px auto 5px;position:relative}
 .gauge svg{width:100%;display:block;overflow:visible}
-.gauge-value{
-  position:absolute;left:0;right:0;bottom:8px;
-  text-align:center;font-size:34px;font-weight:800;
-}
+.gauge-value{position:absolute;left:0;right:0;bottom:8px;text-align:center;font-size:34px;font-weight:800}
 .gauge-value small{font-size:13px;color:var(--muted);font-weight:500}
 .slider-wrap{margin:14px 0 20px}
-input[type=range]{
-  width:100%;accent-color:var(--accent);cursor:pointer;
-}
-.range-labels{
-  display:flex;justify-content:space-between;
-  color:var(--muted);font-size:12px;margin-top:5px;
-}
+input[type=range]{width:100%;accent-color:var(--accent);cursor:pointer}
+.range-labels{display:flex;justify-content:space-between;color:var(--muted);font-size:12px;margin-top:5px}
 .buttons{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
-.action{
-  border:0;border-radius:12px;padding:14px 10px;
-  color:white;font-size:15px;font-weight:700;
-  background:var(--panel2);transition:.15s;
-}
+.action{border:0;border-radius:12px;padding:14px 10px;color:white;font-size:15px;font-weight:700;background:var(--panel2);transition:.15s}
 .action:active{transform:scale(.97)}
 .action:disabled{opacity:.5}
 .on-btn{background:#14634d}
@@ -118,385 +63,389 @@ input[type=range]{
 .preset{border:1px solid #43516a}
 .preset.active{background:#66501d;border-color:var(--accent);color:#ffe39a}
 
-/* SESLİ KONTROL */
-.voice{
-  margin-top:20px;background:var(--panel);
-  border:1px solid #293950;border-radius:22px;
-  padding:22px;display:flex;align-items:center;
-  justify-content:space-between;gap:20px;
-}
+/* VOICE */
+.voice{margin-top:20px;background:var(--panel);border:1px solid #293950;border-radius:22px;padding:22px;display:flex;align-items:center;justify-content:space-between;gap:20px}
 .voice h2{margin:0 0 7px;font-size:19px}
 .voice p{margin:0;color:var(--muted);font-size:13px;line-height:1.5}
-.mic{
-  width:62px;height:62px;border-radius:50%;
-  background:#66501d;color:#ffe39a;font-size:25px;
-  flex-shrink:0;border:0;
-}
+.mic{width:62px;height:62px;border-radius:50%;background:#66501d;color:#ffe39a;font-size:25px;flex-shrink:0;border:0}
 .mic.listening{background:#8a303b;animation:pulse 1s infinite}
 @keyframes pulse{50%{box-shadow:0 0 0 12px #8a303b33}}
 .message{min-height:22px;margin:15px 2px 0;color:var(--muted);font-size:13px}
 footer{text-align:center;color:#71829a;font-size:12px;padding:22px}
 
 @media(max-width:650px){
-  header{padding:15px}
-  main{padding:14px}
-  .cards{grid-template-columns:1fr}
-  .brand{font-size:16px}
-  .voice{padding:17px}
+ header{padding:15px}
+ main{padding:14px}
+ .cards{grid-template-columns:1fr}
+ .brand{font-size:16px}
+ .voice{padding:17px}
+ .status{max-width:105px}
 }
 </style>
 </head>
-
 <body>
 
-<!-- ŞİFRE EKRANI -->
 <section id="loginScreen">
-  <div class="login-card">
-    <div class="logo-icon">🏠</div>
-    <h1>SMART HOME <span>CONTROL</span></h1>
-    <p>Akıllı ev kontrol sistemine hoş geldin.</p>
-
-    <form id="loginForm">
-      <input id="password" type="password"
-        placeholder="Kontrol şifresi" autocomplete="current-password"
-        required>
-      <button class="primary" type="submit">GİRİŞ YAP</button>
-    </form>
-
-    <div class="login-error" id="loginError"></div>
-  </div>
+ <div class="login-card">
+  <div class="logo-icon">🏠</div>
+  <h1>SMART HOME <span>CONTROL</span></h1>
+  <p>Akıllı ev kontrol sistemine hoş geldin.</p>
+  <form id="loginForm">
+   <input id="password" type="password" placeholder="Kontrol şifresi" autocomplete="current-password" required>
+   <button class="primary" type="submit">GİRİŞ YAP</button>
+  </form>
+  <div class="login-error" id="loginError"></div>
+ </div>
 </section>
 
-<!-- ANA KONTROL PANELİ -->
 <section id="appScreen" class="hidden">
-
-<header>
+ <header>
   <div class="brand">SMART HOME <span>CONTROL</span></div>
   <div class="header-right">
-    <div class="status" id="connection">
-      <i></i><span>Bağlantı bekleniyor</span>
-    </div>
-    <button class="logout" onclick="logout()">ÇIKIŞ</button>
+   <div class="status" id="connection"><i></i><span>Bağlantı bekleniyor</span></div>
+   <button class="logout" onclick="logout()">ÇIKIŞ</button>
   </div>
-</header>
+ </header>
 
-<main>
+ <main>
   <section class="cards" id="ledCards"></section>
-
   <section class="voice">
-    <div>
-      <h2>🎙 Sesli Kontrol</h2>
-      <p id="voiceText">
-        Mikrofon düğmesine bas ve komutunu söyle.<br>
-        Örnek: LED 1 parlaklığını yüzde 35 yap.
-      </p>
-    </div>
-    <button class="mic" id="micButton">🎙</button>
+   <div>
+    <h2>🎙 Sesli Kontrol</h2>
+    <p id="voiceText">Mikrofon düğmesine bas ve komutunu söyle.<br>Örnek: LED 1 parlaklığını yüzde 35 yap.</p>
+   </div>
+   <button class="mic" id="micButton">🎙</button>
   </section>
-
   <div class="message" id="message">Kontrol paneli hazır.</div>
-</main>
-
-<footer>SMART HOME CONTROL · LED 1 + LED 2</footer>
+ </main>
+ <footer>SMART HOME CONTROL · LED 1 + LED 2</footer>
 </section>
 
 <script>
-/* SUNUCU ADRESİ SABİT */
-const API = "https://smart-home-control.cesurtavuk1905.workers.dev";
+"use strict";
 
-let token = "";
-let data = {
-  led1:{on:false,brightness:100},
-  led2:{on:false,brightness:100}
+/* SABİT CLOUDFLARE ADRESİ */
+const API="https://smart-home-control.cesurtavuk1905.workers.dev";
+
+let token="";
+let data={
+ led1:{on:false,brightness:100},
+ led2:{on:false,brightness:100}
 };
-let polling = false;
+let polling=false;
+let refreshTimer=null;
 
-const $ = id => document.getElementById(id);
+const $=id=>document.getElementById(id);
 
 function showMessage(text){
-  $("message").textContent=text;
+ $("message").textContent=text;
 }
 
-/* GİRİŞ VE ŞİFRE KONTROLÜ */
-$("loginForm").addEventListener("submit",async function(e){
-  e.preventDefault();
+/* GÜVENLİ CEVAP OKUMA */
+async function readResponse(response){
+ const raw=await response.text();
 
-  const password=$("password").value.trim();
-  if(!password)return;
+ if(!raw || !raw.trim()){
+  throw new Error("Sunucu boş cevap gönderdi. HTTP "+response.status);
+ }
 
-  $("loginError").textContent="Sunucu kontrol ediliyor...";
+ let result;
+ try{
+  result=JSON.parse(raw);
+ }catch{
+  throw new Error(
+   "Sunucu JSON göndermedi. HTTP "+response.status+
+   ". Cevap: "+raw.slice(0,120)
+  );
+ }
 
-  try{
-    const response=await fetch(API+"/api/state",{
-      headers:{"Authorization":"Bearer "+password}
-    });
+ if(!response.ok){
+  throw new Error(result.error||"HTTP "+response.status+" hatası.");
+ }
 
-    const result=await response.json();
+ if(!result || typeof result!=="object"){
+  throw new Error("Sunucu cevabı geçersiz.");
+ }
 
-    if(!response.ok || !result.ok){
-      throw new Error("Şifre yanlış veya sunucuya erişilemiyor.");
-    }
+ return result;
+}
 
-    token=password;
-    data=result.target;
-    $("password").value="";
-    $("loginError").textContent="";
+/* API */
+async function request(path,body){
+ if(!token)throw new Error("Önce giriş yapmalısın.");
 
-    $("loginScreen").classList.add("hidden");
-    $("appScreen").classList.remove("hidden");
+ let response;
+ try{
+  response=await fetch(API+path,{
+   method:body?"POST":"GET",
+   headers:{
+    "Authorization":"Bearer "+token,
+    ...(body?{"Content-Type":"application/json"}:{})
+   },
+   body:body?JSON.stringify(body):undefined,
+   cache:"no-store"
+  });
+ }catch(error){
+  throw new Error("Sunucuya bağlanılamadı. İnternet bağlantını kontrol et.");
+ }
 
-    render();
-    refresh();
-    showMessage("Giriş başarılı.");
+ const result=await readResponse(response);
 
-  }catch(error){
-    token="";
-    $("loginError").textContent=error.message;
+ if(result.ok!==true){
+  throw new Error(result.error||"Sunucu isteği kabul etmedi.");
+ }
+
+ return result;
+}
+
+/* LOGIN */
+$("loginForm").addEventListener("submit",async e=>{
+ e.preventDefault();
+
+ const password=$("password").value.trim();
+ if(!password)return;
+
+ $("loginError").textContent="Sunucu kontrol ediliyor...";
+
+ try{
+  const response=await fetch(API+"/api/state",{
+   headers:{"Authorization":"Bearer "+password},
+   cache:"no-store"
+  });
+
+  const result=await readResponse(response);
+
+  if(result.ok!==true || !result.target){
+   throw new Error(result.error||"Sunucu durumu alınamadı.");
   }
+
+  token=password;
+  data=result.target;
+
+  $("password").value="";
+  $("loginError").textContent="";
+  $("loginScreen").classList.add("hidden");
+  $("appScreen").classList.remove("hidden");
+
+  render();
+  showMessage("Giriş başarılı.");
+  refresh();
+
+  if(refreshTimer)clearInterval(refreshTimer);
+  refreshTimer=setInterval(refresh,3000);
+
+ }catch(error){
+  token="";
+  $("loginError").textContent=error.message;
+ }
 });
 
 function logout(){
-  token="";
-  $("appScreen").classList.add("hidden");
-  $("loginScreen").classList.remove("hidden");
-  $("password").value="";
-  $("loginError").textContent="";
+ token="";
+ if(refreshTimer)clearInterval(refreshTimer);
+ refreshTimer=null;
+ $("appScreen").classList.add("hidden");
+ $("loginScreen").classList.remove("hidden");
+ $("password").value="";
+ $("loginError").textContent="";
+ $("connection").className="status";
+ $("connection").querySelector("span").textContent="Bağlantı bekleniyor";
 }
 
-/* LED KARTLARI */
+/* LED ARAYÜZÜ */
 function render(){
-  $("ledCards").innerHTML=[1,2].map(n=>{
-    const led=data["led"+n];
-    const value=led.brightness;
-    const dash=377*value/100;
+ $("ledCards").innerHTML=[1,2].map(n=>{
+  const led=data["led"+n];
+  const value=Number(led.brightness)||0;
+  const dash=377*value/100;
 
-    return `
-    <article class="card">
-      <div class="card-head">
-        <h2>💡 LED ${n}</h2>
-        <span class="state ${led.on?"on":""}">
-          ${led.on?"AÇIK":"KAPALI"}
-        </span>
-      </div>
+  return `
+  <article class="card">
+   <div class="card-head">
+    <h2>💡 LED ${n}</h2>
+    <span class="state ${led.on?"on":""}">
+     ${led.on?"AÇIK":"KAPALI"}
+    </span>
+   </div>
 
-      <div class="gauge">
-        <svg viewBox="0 0 300 175">
-          <path d="M30 150 A120 120 0 0 1 270 150"
-            fill="none" stroke="#35445a" stroke-width="16"
-            stroke-linecap="round"/>
-          <path d="M30 150 A120 120 0 0 1 270 150"
-            fill="none" stroke="#f4bd35" stroke-width="16"
-            stroke-linecap="round"
-            stroke-dasharray="${dash} 377"/>
-        </svg>
-        <div class="gauge-value">
-          ${value}%<br><small>PARLAKLIK</small>
-        </div>
-      </div>
+   <div class="gauge">
+    <svg viewBox="0 0 300 175">
+     <path d="M30 150 A120 120 0 0 1 270 150"
+      fill="none" stroke="#35445a" stroke-width="16" stroke-linecap="round"/>
+     <path d="M30 150 A120 120 0 0 1 270 150"
+      fill="none" stroke="#f4bd35" stroke-width="16"
+      stroke-linecap="round" stroke-dasharray="${dash} 377"/>
+    </svg>
+    <div class="gauge-value">${value}%<br><small>PARLAKLIK</small></div>
+   </div>
 
-      <div class="slider-wrap">
-        <input type="range" min="0" max="100" value="${value}"
-          aria-label="LED ${n} parlaklığı"
-          oninput="preview(${n},this.value)"
-          onchange="setBrightness(${n},this.value)">
-        <div class="range-labels">
-          <span>0%</span><span>100%</span>
-        </div>
-      </div>
+   <div class="slider-wrap">
+    <input type="range" min="0" max="100" value="${value}"
+     aria-label="LED ${n} parlaklığı"
+     oninput="preview(${n},this.value)"
+     onchange="setBrightness(${n},this.value)">
+    <div class="range-labels"><span>0%</span><span>100%</span></div>
+   </div>
 
-      <div class="buttons">
-        <button class="action on-btn" onclick="command(${n},'on')">AÇ</button>
-        <button class="action off-btn" onclick="command(${n},'off')">KAPAT</button>
-        <button class="action preset ${value===50?'active':''}"
-          onclick="setBrightness(${n},50)">%50</button>
-        <button class="action preset ${value===100?'active':''}"
-          onclick="setBrightness(${n},100)">%100</button>
-      </div>
-    </article>`;
-  }).join("");
+   <div class="buttons">
+    <button class="action on-btn" onclick="command(${n},'on')">AÇ</button>
+    <button class="action off-btn" onclick="command(${n},'off')">KAPAT</button>
+    <button class="action preset ${value===50?"active":""}" onclick="setBrightness(${n},50)">%50</button>
+    <button class="action preset ${value===100?"active":""}" onclick="setBrightness(${n},100)">%100</button>
+   </div>
+  </article>`;
+ }).join("");
 }
 
 /* KAYDIRICI ÖN İZLEMESİ */
 function preview(n,value){
-  const card=document.querySelectorAll(".card")[n-1];
-  if(!card)return;
+ const card=document.querySelectorAll(".card")[n-1];
+ if(!card)return;
 
-  const v=Number(value);
-  card.querySelector(".gauge-value").innerHTML=
-    `${v}%<br><small>PARLAKLIK</small>`;
+ const v=Number(value);
+ card.querySelector(".gauge-value").innerHTML=
+  `${v}%<br><small>PARLAKLIK</small>`;
 
-  card.querySelector(".gauge path:last-child").setAttribute(
-    "stroke-dasharray",`${377*v/100} 377`
-  );
+ card.querySelector(".gauge path:last-child").setAttribute(
+  "stroke-dasharray",`${377*v/100} 377`
+ );
 }
 
-/* API İSTEĞİ */
-async function request(path,body){
-  if(!token)throw new Error("Önce giriş yapmalısın.");
+/* KOMUT GÖNDER */
+async function command(n,action){
+ try{
+  await request("/api/command",{led:n,action});
+  await refresh();
+  showMessage(`LED ${n}: ${action==="on"?"AÇILDI":"KAPATILDI"}`);
+ }catch(error){
+  showMessage(error.message);
+ }
+}
 
-  const response=await fetch(API+path,{
-    method:body?"POST":"GET",
-    headers:{
-      "Authorization":"Bearer "+token,
-      ...(body?{"Content-Type":"application/json"}:{})
-    },
-    body:body?JSON.stringify(body):undefined
+async function setBrightness(n,value){
+ value=Math.max(0,Math.min(100,Math.round(Number(value))));
+
+ try{
+  await request("/api/command",{
+   led:n,
+   action:"brightness",
+   brightness:value
   });
 
-  const result=await response.json();
-
-  if(response.status===401){
-    logout();
-    throw new Error("Oturum sona erdi. Tekrar giriş yap.");
-  }
-
-  if(!response.ok || !result.ok){
-    throw new Error(result.error||"Sunucu hatası.");
-  }
-
-  return result;
+  await refresh();
+  showMessage(`LED ${n} parlaklığı %${value} yapıldı.`);
+ }catch(error){
+  showMessage(error.message);
+  refresh();
+ }
 }
 
-/* AÇ / KAPAT */
-async function command(n,action){
-  try{
-    await request("/api/command",{led:n,action});
-    await refresh();
-    showMessage(`LED ${n}: ${action==="on"?"AÇILDI":"KAPATILDI"}`);
-  }catch(e){
-    showMessage(e.message);
-  }
-}
-
-/* PARLAKLIK */
-async function setBrightness(n,value){
-  value=Math.max(0,Math.min(100,Math.round(Number(value))));
-
-  try{
-    await request("/api/command",{
-      led:n,
-      action:"brightness",
-      brightness:value
-    });
-
-    await refresh();
-    showMessage(`LED ${n} parlaklığı %${value} yapıldı.`);
-  }catch(e){
-    showMessage(e.message);
-    refresh();
-  }
-}
-
-/* DURUM GÜNCELLEME */
+/* DURUMU OKU */
 async function refresh(){
-  if(!token || polling)return;
-  polling=true;
+ if(!token||polling)return;
+ polling=true;
 
-  try{
-    const result=await request("/api/state");
-    data=result.target;
-    render();
+ try{
+  const result=await request("/api/state");
 
-    $("connection").className="status online";
-    $("connection").querySelector("span").textContent=
-      result.bridgeOnline?"Arduino bağlantısı aktif":
-      "Sunucu bağlı · Arduino bekleniyor";
-
-  }catch(e){
-    $("connection").className="status";
-    $("connection").querySelector("span").textContent="Bağlantı yok";
-  }finally{
-    polling=false;
+  if(!result.target||!result.target.led1||!result.target.led2){
+   throw new Error("LED durum verileri eksik.");
   }
+
+  data=result.target;
+  render();
+
+  $("connection").className="status online";
+  $("connection").querySelector("span").textContent=
+   result.bridgeOnline?"Arduino bağlantısı aktif":"Sunucu bağlı · Arduino bekleniyor";
+
+ }catch(error){
+  $("connection").className="status";
+  $("connection").querySelector("span").textContent="Bağlantı hatası";
+  showMessage(error.message);
+ }finally{
+  polling=false;
+ }
 }
 
-/* TÜRKÇE SESLİ KOMUT */
+/* SESLİ KOMUT */
 function parseVoice(text){
-  const t=text.toLocaleLowerCase("tr-TR");
+ const t=text.toLocaleLowerCase("tr-TR");
+ const match=t.match(/led\s*(1|bir|2|iki)/);
 
-  const ledMatch=t.match(/led\s*(1|bir|2|iki)/);
-  if(!ledMatch){
-    return "LED 1 veya LED 2 belirtmelisin.";
-  }
+ if(!match)return "LED 1 veya LED 2 belirtmelisin.";
 
-  const n=["1","bir"].includes(ledMatch[1])?1:2;
+ const n=["1","bir"].includes(match[1])?1:2;
 
-  if(/kapat|söndür/.test(t)){
-    command(n,"off");
-    return `LED ${n} kapatılıyor.`;
-  }
+ if(/kapat|söndür/.test(t)){
+  command(n,"off");
+  return `LED ${n} kapatılıyor.`;
+ }
 
-  const percent=t.match(/yüzde\s*(\d{1,3})|(\d{1,3})\s*%/);
+ const percent=t.match(/yüzde\s*(\d{1,3})|(\d{1,3})\s*%/);
 
-  if(percent){
-    const value=Math.min(100,Number(percent[1]||percent[2]));
-    setBrightness(n,value);
-    return `LED ${n} parlaklığı %${value} yapılıyor.`;
-  }
+ if(percent){
+  const value=Math.min(100,Number(percent[1]||percent[2]));
+  setBrightness(n,value);
+  return `LED ${n} parlaklığı %${value} yapılıyor.`;
+ }
 
-  if(/yarım|elli|50/.test(t)){
-    setBrightness(n,50);
-    return `LED ${n} %50 yapılıyor.`;
-  }
+ if(/yarım|elli|50/.test(t)){
+  setBrightness(n,50);
+  return `LED ${n} %50 yapılıyor.`;
+ }
 
-  if(/tam|sonuna kadar|yüzde yüz|100/.test(t)){
-    setBrightness(n,100);
-    return `LED ${n} %100 yapılıyor.`;
-  }
+ if(/tam|sonuna kadar|yüzde yüz|100/.test(t)){
+  setBrightness(n,100);
+  return `LED ${n} %100 yapılıyor.`;
+ }
 
-  if(/\baç\b|yak/.test(t)){
-    command(n,"on");
-    return `LED ${n} açılıyor.`;
-  }
+ if(/\baç\b|yak/.test(t)){
+  command(n,"on");
+  return `LED ${n} açılıyor.`;
+ }
 
-  return "Örnek: LED 1 parlaklığını yüzde 40 yap.";
+ return "Örnek: LED 1 parlaklığını yüzde 40 yap.";
 }
 
 /* MİKROFON */
 const SpeechRecognition=
-  window.SpeechRecognition||window.webkitSpeechRecognition;
+ window.SpeechRecognition||window.webkitSpeechRecognition;
 
 $("micButton").addEventListener("click",()=>{
-  if(!SpeechRecognition){
-    showMessage("Ses tanıma desteklenmiyor. Android Chrome kullanmayı dene.");
-    return;
-  }
+ if(!SpeechRecognition){
+  showMessage("Tarayıcı ses tanımayı desteklemiyor. Android Chrome kullan.");
+  return;
+ }
 
-  const recognition=new SpeechRecognition();
-  recognition.lang="tr-TR";
-  recognition.interimResults=false;
+ const recognition=new SpeechRecognition();
+ recognition.lang="tr-TR";
+ recognition.interimResults=false;
+ recognition.maxAlternatives=1;
 
-  recognition.onstart=()=>{
-    $("micButton").classList.add("listening");
-    $("voiceText").textContent="Dinliyorum...";
-  };
+ recognition.onstart=()=>{
+  $("micButton").classList.add("listening");
+  $("voiceText").textContent="Dinliyorum...";
+ };
 
-  recognition.onend=()=>{
-    $("micButton").classList.remove("listening");
-    $("voiceText").innerHTML=
-      'Mikrofona bas ve komutunu söyle.<br>Örnek: LED 1 yüzde 35 yap.';
-  };
+ recognition.onend=()=>{
+  $("micButton").classList.remove("listening");
+  $("voiceText").innerHTML=
+   'Mikrofon düğmesine bas ve komutunu söyle.<br>Örnek: LED 1 parlaklığını yüzde 35 yap.';
+ };
 
-  recognition.onresult=e=>{
-    const spoken=e.results[0][0].transcript;
-    $("voiceText").textContent="Duyulan: "+spoken;
-    showMessage(parseVoice(spoken));
-  };
+ recognition.onresult=e=>{
+  const spoken=e.results[0][0].transcript;
+  $("voiceText").textContent="Duyulan: "+spoken;
+  showMessage(parseVoice(spoken));
+ };
 
-  recognition.onerror=()=>{
-    showMessage("Mikrofon iznini kontrol et.");
-  };
+ recognition.onerror=e=>{
+  showMessage("Mikrofon hatası: "+e.error);
+ };
 
-  recognition.start();
+ recognition.start();
 });
-
-/* OTURUM AÇIKKEN DURUMU YENİLE */
-setInterval(()=>{
-  if(token && !$("appScreen").classList.contains("hidden")){
-    refresh();
-  }
-},3000);
 </script>
-
 </body>
 </html>
