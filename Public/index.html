@@ -6,388 +6,350 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#101827">
 <title>SMART HOME CONTROL</title>
-
 <style>
-:root {
- --bg:#0b1220;
- --panel:#172338;
- --line:#2c405d;
- --text:#f4f7ff;
- --muted:#9eafc5;
- --green:#20c987;
- --red:#ed5c72;
- --blue:#477fe5;
+:root{
+  color-scheme:dark;
+  --bg:#0b1220;
+  --panel:#172338;
+  --panel2:#202f47;
+  --text:#f4f7fb;
+  --muted:#9aabc1;
+  --accent:#f4bd35;
+  --green:#35d39a;
+  --red:#f47777;
 }
 *{box-sizing:border-box}
 body{
- margin:0;
- background:radial-gradient(circle at top,#203653,#0b1220 65%);
- color:var(--text);
- font-family:Arial,sans-serif;
- min-height:100vh;
-}
-.container{
- max-width:1100px;
- margin:auto;
- padding:22px;
+  margin:0;background:var(--bg);color:var(--text);
+  font-family:Arial, sans-serif;min-height:100vh;
 }
 header{
- display:flex;
- justify-content:space-between;
- align-items:center;
- gap:12px;
- margin-bottom:22px;
+  display:flex;align-items:center;justify-content:space-between;
+  gap:12px;padding:20px 24px;border-bottom:1px solid #29374d;
 }
-h1{font-size:24px;margin:0}
-.subtitle{color:var(--muted);font-size:13px;margin-top:5px}
-.panel{
- background:var(--panel);
- border:1px solid var(--line);
- border-radius:22px;
- padding:24px;
- margin-bottom:18px;
+.brand{font-size:21px;font-weight:800;letter-spacing:1px}
+.brand span{color:var(--accent)}
+.status{font-size:12px;color:var(--muted)}
+.status i{
+  display:inline-block;width:8px;height:8px;border-radius:50%;
+  background:var(--red);margin-right:7px
 }
-.layout{
- display:grid;
- grid-template-columns:1.3fr .7fr;
- gap:18px;
+.status.online i{background:var(--green)}
+main{max-width:1100px;margin:auto;padding:22px}
+.cards{
+  display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;
 }
-.status{
- border:1px solid var(--line);
- border-radius:30px;
- padding:8px 14px;
- font-size:12px;
- color:var(--muted);
+.card{
+  background:var(--panel);border:1px solid #293950;
+  border-radius:22px;padding:20px;min-width:0;
 }
-.light-area{
- display:grid;
- place-items:center;
- min-height:240px;
-}
-.lamp{
- width:150px;
- height:150px;
- border-radius:50%;
- background:#25364d;
- border:2px solid #405571;
- display:grid;
- place-items:center;
- font-size:65px;
- transition:.3s;
-}
-.lamp.on{
- background:#ffd76a;
- color:#fff;
- box-shadow:0 0 35px #ffd76a,0 0 90px #ffd76a66;
-}
+.card-head{display:flex;justify-content:space-between;align-items:center}
+.card h2{margin:0;font-size:20px}
 .state{
- text-align:center;
- font-size:25px;
- font-weight:bold;
- margin:5px;
+  font-size:12px;padding:7px 12px;border-radius:30px;
+  background:#303b4c;color:var(--muted)
 }
-.description{
- text-align:center;
- color:var(--muted);
- font-size:13px;
+.state.on{background:#123d35;color:var(--green)}
+.gauge{
+  width:min(100%,340px);margin:18px auto 5px;position:relative;
 }
-.controls{
- display:grid;
- grid-template-columns:1fr 1fr;
- gap:12px;
- margin-top:25px;
+.gauge svg{width:100%;display:block;overflow:visible}
+.gauge-value{
+  position:absolute;left:0;right:0;bottom:8px;
+  text-align:center;font-size:34px;font-weight:800;
 }
+.gauge-value small{font-size:13px;color:var(--muted);font-weight:500}
+.slider-wrap{margin:14px 0 20px}
+input[type=range]{
+  width:100%;accent-color:var(--accent);cursor:pointer;
+}
+.range-labels{
+  display:flex;justify-content:space-between;color:var(--muted);
+  font-size:12px;margin-top:5px
+}
+.buttons{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
 button{
- border:0;
- border-radius:15px;
- padding:18px 10px;
- color:white;
- font-size:16px;
- font-weight:bold;
- cursor:pointer;
+  border:0;border-radius:12px;padding:14px 10px;
+  color:white;font-size:15px;font-weight:700;cursor:pointer;
+  background:var(--panel2);transition:.15s;
 }
-button:disabled{opacity:.4}
-.on{background:var(--green)}
-.off{background:var(--red)}
-.toggle{
- grid-column:1/-1;
- background:var(--blue);
+button:active{transform:scale(.97)}
+button:disabled{opacity:.5;cursor:wait}
+button.on-btn{background:#14634d}
+button.off-btn{background:#633b43}
+button.preset{border:1px solid #43516a}
+button.preset.active{background:#66501d;border-color:var(--accent);color:#ffe39a}
+.voice{
+  margin-top:20px;background:var(--panel);border:1px solid #293950;
+  border-radius:22px;padding:22px;display:flex;
+  align-items:center;justify-content:space-between;gap:20px;
 }
-.info{
- display:flex;
- justify-content:space-between;
- padding:13px 0;
- border-bottom:1px solid var(--line);
- gap:10px;
- font-size:14px;
+.voice h2{margin:0 0 7px;font-size:19px}
+.voice p{margin:0;color:var(--muted);font-size:13px;line-height:1.5}
+.mic{
+  width:62px;height:62px;border-radius:50%;background:#66501d;
+  color:#ffe39a;font-size:25px;flex-shrink:0
 }
-.info span:first-child{color:var(--muted)}
+.mic.listening{background:#8a303b;animation:pulse 1s infinite}
+@keyframes pulse{50%{box-shadow:0 0 0 12px #8a303b33}}
+.message{
+  min-height:22px;margin:15px 2px 0;color:var(--muted);
+  font-size:13px
+}
+.settings{
+  margin-top:22px;background:var(--panel);border-radius:16px;
+  padding:15px;display:grid;grid-template-columns:1fr 1fr auto;gap:10px;
+}
 .settings input{
- width:100%;
- padding:13px;
- margin:7px 0 14px;
- border:1px solid var(--line);
- background:#0b1628;
- color:white;
- border-radius:10px;
- font-size:14px;
+  width:100%;min-width:0;background:#0d1727;border:1px solid #34445c;
+  border-radius:9px;padding:11px;color:white;
 }
-.save{
- width:100%;
- background:#344b6c;
-}
-.note{
- color:var(--muted);
- font-size:12px;
- line-height:1.6;
- margin-top:15px;
-}
-footer{
- text-align:center;
- color:#8293aa;
- font-size:12px;
- padding:15px;
-}
-#message{
- position:fixed;
- bottom:20px;
- left:50%;
- transform:translateX(-50%);
- background:#263b59;
- padding:13px 20px;
- border-radius:12px;
- display:none;
- max-width:90%;
-}
-@media(max-width:750px){
- .layout{grid-template-columns:1fr}
- .container{padding:13px}
- h1{font-size:19px}
+.settings button{padding:10px 15px}
+footer{text-align:center;color:#71829a;font-size:12px;padding:22px}
+@media(max-width:650px){
+  header{padding:16px}
+  main{padding:14px}
+  .cards{grid-template-columns:1fr}
+  .voice{padding:17px}
+  .settings{grid-template-columns:1fr}
 }
 </style>
 </head>
-
 <body>
-<div class="container">
-
 <header>
- <div>
-  <h1>⌂ SMART HOME CONTROL</h1>
-  <div class="subtitle">Akıllı ev kontrol merkezi</div>
- </div>
- <div id="connection" class="status">● Sunucu bekleniyor</div>
+  <div class="brand">SMART HOME <span>CONTROL</span></div>
+  <div class="status" id="connection"><i></i><span>Sunucu kontrol ediliyor</span></div>
 </header>
 
-<div class="layout">
+<main>
+  <section class="cards" id="ledCards"></section>
 
-<section class="panel">
- <h2>Oturma Odası</h2>
- <p class="subtitle">Aydınlatma kontrolü · Röle 01</p>
+  <section class="voice">
+    <div>
+      <h2>Sesli Kontrol</h2>
+      <p id="voiceText">Mikrofona bas ve komutunu söyle.<br>
+      Örnek: “LED 1 parlaklığını yüzde 35 yap.”</p>
+    </div>
+    <button class="mic" id="micButton" title="Sesli komut">🎙</button>
+  </section>
 
- <div class="light-area">
-  <div id="lamp" class="lamp">💡</div>
- </div>
+  <div class="message" id="message">Kontrol paneli hazır.</div>
 
- <div id="state" class="state">DURUM BİLİNMİYOR</div>
- <div id="description" class="description">
-  Arduino bağlantısı bekleniyor
- </div>
+  <section class="settings">
+    <input id="serverUrl" placeholder="Cloudflare sunucu URL">
+    <input id="token" type="password" placeholder="CONTROL_TOKEN">
+    <button onclick="saveSettings()">BAĞLAN</button>
+  </section>
+</main>
 
- <div class="controls">
-  <button class="on" id="onBtn">⏻ IŞIĞI AÇ</button>
-  <button class="off" id="offBtn">IŞIĞI KAPAT</button>
-  <button class="toggle" id="toggleBtn">⇄ AÇ / KAPAT</button>
- </div>
-</section>
-
-<aside>
-
-<section class="panel">
- <h3>Sistem durumu</h3>
-
- <div class="info">
-  <span>Bluetooth köprüsü</span>
-  <strong id="bridge">Bekleniyor</strong>
- </div>
-
- <div class="info">
-  <span>Röle durumu</span>
-  <strong id="relay">Bilinmiyor</strong>
- </div>
-
- <div class="info">
-  <span>Son güncelleme</span>
-  <strong id="updated">—</strong>
- </div>
-
- <div class="info">
-  <span>Komut</span>
-  <strong id="command">Beklemede</strong>
- </div>
-</section>
-
-<section class="panel settings">
- <h3>Sunucu bağlantısı</h3>
-
- <label>Cloudflare Worker adresi</label>
- <input id="api" placeholder="https://proje.workers.dev">
-
- <label>Kontrol anahtarı</label>
- <input id="token" type="password" placeholder="CONTROL_TOKEN">
-
- <button class="save" id="save">AYARLARI KAYDET</button>
-
- <div class="note">
-  Bu panel GitHub Pages üzerinde çalışır.
-  Arduino UNO ve HC-05 bağlantısı için Android Bluetooth
-  köprü uygulaması gereklidir.
- </div>
-</section>
-
-</aside>
-</div>
-
-<footer>SMART HOME CONTROL · GitHub + Cloudflare</footer>
-</div>
-
-<div id="message"></div>
+<footer>SMART HOME CONTROL · İki bağımsız LED kontrolü</footer>
 
 <script>
 const $ = id => document.getElementById(id);
 
-let apiAddress = localStorage.getItem("sh_api") || "";
-let token = localStorage.getItem("sh_token") || "";
-let actual = null;
+let api = localStorage.getItem("shc_url") || location.origin;
+let token = localStorage.getItem("shc_token") || "";
+let data = {
+  led1:{on:false,brightness:100},
+  led2:{on:false,brightness:100}
+};
 let busy = false;
 
-$("api").value = apiAddress;
+$("serverUrl").value = api;
 $("token").value = token;
 
 function message(text){
- $("message").textContent = text;
- $("message").style.display = "block";
- setTimeout(() => $("message").style.display = "none",2600);
+  $("message").textContent = text;
 }
 
-function headers(){
- return {
-  "Content-Type":"application/json",
-  "Authorization":"Bearer " + token
- };
+function render(){
+  $("ledCards").innerHTML = [1,2].map(n=>{
+    const led = data["led"+n];
+    const value = led.brightness;
+    const circumference = 377;
+    const dash = circumference * value / 100;
+
+    return `
+    <article class="card">
+      <div class="card-head">
+        <h2>💡 LED ${n}</h2>
+        <span class="state ${led.on ? "on" : ""}">
+          ${led.on ? "AÇIK" : "KAPALI"}
+        </span>
+      </div>
+
+      <div class="gauge">
+        <svg viewBox="0 0 300 175" aria-label="Parlaklık göstergesi">
+          <path d="M30 150 A120 120 0 0 1 270 150"
+            fill="none" stroke="#35445a" stroke-width="16"
+            stroke-linecap="round"/>
+          <path d="M30 150 A120 120 0 0 1 270 150"
+            fill="none" stroke="#f4bd35" stroke-width="16"
+            stroke-linecap="round"
+            stroke-dasharray="${dash} ${circumference}"/>
+        </svg>
+        <div class="gauge-value">${value}%<br>
+          <small>PARLAKLIK</small>
+        </div>
+      </div>
+
+      <div class="slider-wrap">
+        <input type="range" min="0" max="100" value="${value}"
+          aria-label="LED ${n} parlaklığı"
+          oninput="preview(${n},this.value)"
+          onchange="setBrightness(${n},this.value)">
+        <div class="range-labels"><span>0%</span><span>100%</span></div>
+      </div>
+
+      <div class="buttons">
+        <button class="on-btn" onclick="command(${n},'on')">AÇ</button>
+        <button class="off-btn" onclick="command(${n},'off')">KAPAT</button>
+        <button class="preset ${value===50?'active':''}"
+          onclick="setBrightness(${n},50)">%50</button>
+        <button class="preset ${value===100?'active':''}"
+          onclick="setBrightness(${n},100)">%100</button>
+      </div>
+    </article>`;
+  }).join("");
 }
 
-async function request(path,options={}){
- if(!apiAddress || !token)
-  throw new Error("Önce sunucu bağlantısını ayarla.");
-
- const response = await fetch(apiAddress + path,{
-  ...options,
-  headers:{...headers(),...(options.headers || {})}
- });
-
- const data = await response.json();
-
- if(!response.ok)
-  throw new Error(data.error || "Sunucu hatası");
-
- return data;
+function preview(n,value){
+  data["led"+n].brightness = Number(value);
+  data["led"+n].on = Number(value)>0;
+  render();
+  const slider = document.querySelectorAll('input[type="range"]')[n-1];
+  if(slider) slider.value=value;
 }
 
-function render(data){
- actual = data.actual;
+async function request(path,body){
+  if(!token) throw new Error("Önce CONTROL_TOKEN girip BAĞLAN'a bas.");
+  const response = await fetch(api.replace(/\/$/,"")+path,{
+    method:body ? "POST" : "GET",
+    headers:{
+      "Authorization":"Bearer "+token,
+      ...(body ? {"Content-Type":"application/json"} : {})
+    },
+    body:body ? JSON.stringify(body) : undefined
+  });
+  const result = await response.json();
+  if(!response.ok || !result.ok){
+    throw new Error(result.error || "Sunucu hatası");
+  }
+  return result;
+}
 
- const known = actual === "ON" || actual === "OFF";
- const isOn = actual === "ON";
+async function command(n,action){
+  try{
+    await request("/api/command",{led:n,action});
+    await refresh();
+    message(`LED ${n}: ${action==="on"?"Açma":"Kapatma"} komutu gönderildi.`);
+  }catch(e){message(e.message);}
+}
 
- $("lamp").classList.toggle("on",isOn);
-
- $("state").textContent =
-  known ? (isOn ? "IŞIK AÇIK" : "IŞIK KAPALI") :
-  "DURUM BİLİNMİYOR";
-
- $("description").textContent =
-  known ? "Arduino röle durumu" :
-  "Arduino köprüsünden durum bekleniyor";
-
- $("relay").textContent =
-  known ? (isOn ? "AÇIK" : "KAPALI") : "Bilinmiyor";
-
- $("bridge").textContent =
-  data.bridgeOnline ? "Bağlı" : "Bağlantı bekleniyor";
-
- $("updated").textContent =
-  data.updatedAt ?
-  new Date(data.updatedAt).toLocaleTimeString("tr-TR") : "—";
-
- $("command").textContent =
-  data.target === data.actual ? "Senkron" : "Komut bekliyor";
-
- $("connection").textContent = "● Sunucu çevrimiçi";
- $("connection").style.color = "#20c987";
-
- $("toggleBtn").disabled = !known || busy;
- $("onBtn").disabled = busy;
- $("offBtn").disabled = busy;
+async function setBrightness(n,value){
+  value=Math.max(0,Math.min(100,Number(value)));
+  try{
+    await request("/api/command",{
+      led:n,action:"brightness",brightness:value
+    });
+    await refresh();
+    message(`LED ${n} parlaklığı %${value} olarak ayarlandı.`);
+  }catch(e){message(e.message);}
 }
 
 async function refresh(){
- try{
-  const data = await request("/api/state");
-  render(data);
- }catch(error){
-  $("connection").textContent = "● Bağlantı yok";
-  $("connection").style.color = "#ed5c72";
-  $("command").textContent = error.message;
- }
+  try{
+    const result=await request("/api/state");
+    data=result.target;
+    render();
+    $("connection").className="status online";
+    $("connection").querySelector("span").textContent =
+      result.bridgeOnline ? "Arduino bağlantısı aktif" : "Sunucu bağlı · Arduino bekleniyor";
+  }catch(e){
+    $("connection").className="status";
+    $("connection").querySelector("span").textContent="Bağlantı yok";
+    message(e.message);
+  }
 }
 
-async function sendCommand(state){
- if(busy) return;
-
- busy = true;
- $("onBtn").disabled = true;
- $("offBtn").disabled = true;
- $("toggleBtn").disabled = true;
-
- try{
-  await request("/api/command",{
-   method:"POST",
-   body:JSON.stringify({state})
-  });
-
-  message(state === "ON" ?
-   "Açma komutu gönderildi" :
-   "Kapatma komutu gönderildi");
-
- }catch(error){
-  message(error.message);
- }
-
- busy = false;
- await refresh();
+function saveSettings(){
+  api=$("serverUrl").value.trim().replace(/\/$/,"");
+  token=$("token").value.trim();
+  localStorage.setItem("shc_url",api);
+  localStorage.setItem("shc_token",token);
+  message("Bağlantı bilgileri kaydedildi.");
+  refresh();
 }
 
-$("onBtn").onclick = () => sendCommand("ON");
-$("offBtn").onclick = () => sendCommand("OFF");
+function parseVoice(text){
+  const t=text.toLocaleLowerCase("tr-TR");
+  const ledMatch=t.match(/led\s*(1|bir|2|iki)/);
+  if(!ledMatch) return "LED 1 veya LED 2 belirtmelisin.";
 
-$("toggleBtn").onclick = () => {
- if(actual === "ON") sendCommand("OFF");
- else if(actual === "OFF") sendCommand("ON");
-};
+  const n=["1","bir"].includes(ledMatch[1])?1:2;
 
-$("save").onclick = () => {
- apiAddress = $("api").value.trim().replace(/\/+$/,"");
- token = $("token").value.trim();
+  if(/kapat|söndür/.test(t)){
+    command(n,"off");
+    return `LED ${n} kapatılıyor.`;
+  }
 
- localStorage.setItem("sh_api",apiAddress);
- localStorage.setItem("sh_token",token);
+  if(/\baç\b|yak/.test(t) && !/yüzde|parlaklık/.test(t)){
+    command(n,"on");
+    return `LED ${n} açılıyor.`;
+  }
 
- message("Bağlantı ayarları kaydedildi");
- refresh();
-};
+  const percent=t.match(/(?:yüzde\s*)?(\d{1,3})\s*(?:%|yüzde)?/);
+  if(percent){
+    const value=Math.min(100,Number(percent[1]));
+    setBrightness(n,value);
+    return `LED ${n} parlaklığı %${value} yapılıyor.`;
+  }
 
+  if(/yarım|elli|50/.test(t)){
+    setBrightness(n,50);
+    return `LED ${n} %50 yapılıyor.`;
+  }
+  if(/tam|sonuna kadar|yüzde yüz|100/.test(t)){
+    setBrightness(n,100);
+    return `LED ${n} %100 yapılıyor.`;
+  }
+
+  return "Komutu anlayamadım. Örneğin LED 1 yüzde 40 yap diyebilirsin.";
+}
+
+const SpeechRecognition =
+  window.SpeechRecognition || window.webkitSpeechRecognition;
+
+$("micButton").addEventListener("click",()=>{
+  if(!SpeechRecognition){
+    message("Bu tarayıcı ses tanımayı desteklemiyor. Android Chrome ile dene.");
+    return;
+  }
+  const recognition=new SpeechRecognition();
+  recognition.lang="tr-TR";
+  recognition.interimResults=false;
+  recognition.onstart=()=>{
+    $("micButton").classList.add("listening");
+    $("voiceText").textContent="Dinliyorum...";
+  };
+  recognition.onend=()=>{
+    $("micButton").classList.remove("listening");
+    $("voiceText").innerHTML='Mikrofona bas ve komutunu söyle.<br>Örnek: “LED 1 yüzde 35 yap.”';
+  };
+  recognition.onresult=e=>{
+    const spoken=e.results[0][0].transcript;
+    $("voiceText").textContent="Duyulan: "+spoken;
+    message(parseVoice(spoken));
+  };
+  recognition.onerror=()=>{
+    message("Mikrofon kullanılamadı. Tarayıcı mikrofon iznini kontrol et.");
+  };
+  recognition.start();
+});
+
+render();
 refresh();
-setInterval(refresh,2500);
+setInterval(refresh,3000);
 </script>
 </body>
 </html>
