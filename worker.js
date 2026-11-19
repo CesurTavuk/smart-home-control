@@ -9,15 +9,11 @@ function json(data, status = 200) {
   return new Response(JSON.stringify(data), {
     status,
     headers: {
+      ...cors,
       "Content-Type": "application/json; charset=utf-8",
-      ...cors
+      "Cache-Control": "no-store"
     }
   });
-}
-
-function authorized(request, env) {
-  return request.headers.get("Authorization") ===
-    `Bearer ${env.CONTROL_TOKEN}`;
 }
 
 function initialState() {
@@ -35,18 +31,47 @@ function initialState() {
   };
 }
 
+function authorized(request, env) {
+  const token = env.CONTROL_TOKEN;
+  return !!token &&
+    request.headers.get("Authorization") === `Bearer ${token}`;
+}
+
 async function readState(env) {
+  if (!env.SMART_HOME_KV) {
+    throw new Error("SMART_HOME_KV bağlantısı bulunamadı.");
+  }
+
   const raw = await env.SMART_HOME_KV.get("smart-home-state");
+
   if (!raw) return initialState();
 
   try {
-    return JSON.parse(raw);
+    const state = JSON.parse(raw);
+    const defaults = initialState();
+
+    return {
+      ...defaults,
+      ...state,
+      target: {
+        ...defaults.target,
+        ...(state.target || {})
+      },
+      actual: {
+        ...defaults.actual,
+        ...(state.actual || {})
+      }
+    };
   } catch {
     return initialState();
   }
 }
 
 async function saveState(env, state) {
+  if (!env.SMART_HOME_KV) {
+    throw new Error("SMART_HOME_KV bağlantısı bulunamadı.");
+  }
+
   await env.SMART_HOME_KV.put(
     "smart-home-state",
     JSON.stringify(state)
@@ -56,26 +81,52 @@ async function saveState(env, state) {
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
-    const path = url.pathname;
+    const path = url.pathname.replace(/\/+$/, "") || "/";
 
     if (request.method === "OPTIONS") {
-      return new Response(null, { status: 204, headers: cors });
-    }
-
-    if (path === "/api/health") {
-      return json({
-        ok: true,
-        app: "SMART HOME CONTROL",
-        version: "2.0.0"
+      return new Response(null, {
+        status: 204,
+        headers: cors
       });
     }
 
+    // Her zaman herkese açık sağlık kontrolü
+    if (path === "/api/health" && request.method === "GET") {
+      return json({
+        ok: true,
+        app: "SMART HOME CONTROL",
+        version: "2.1.0",
+        status: "online",
+        timestamp: new Date().toISOString()
+      });
+    }
+
+    // Ana sayfa
+    if (path === "/" && request.method === "GET") {
+      if (env.ASSETS) {
+        return env.ASSETS.fetch(request);
+      }
+
+      return new Response(
+        "SMART HOME CONTROL Worker aktif. Arayüz için ASSETS bağlantısı gerekli.",
+        {
+          headers: {
+            ...cors,
+            "Content-Type": "text/plain; charset=utf-8"
+          }
+        }
+      );
+    }
+
     if (!path.startsWith("/api/")) {
-      return env.ASSETS.fetch(request);
+      return json({ ok: false, error: "Adres bulunamadı." }, 404);
     }
 
     if (!authorized(request, env)) {
-      return json({ ok: false, error: "Kontrol anahtarı hatalı." }, 401);
+      return json({
+        ok: false,
+        error: "Kontrol şifresi hatalı veya eksik."
+      }, 401);
     }
 
     try {
@@ -145,12 +196,13 @@ export default {
 
         for (const led of ["led1", "led2"]) {
           if (body[led]) {
+            const brightness = Number(body[led].brightness);
+
             state.actual[led] = {
               on: !!body[led].on,
-              brightness: Math.max(
-                0,
-                Math.min(100, Math.round(Number(body[led].brightness) || 0))
-              )
+              brightness: Number.isFinite(brightness)
+                ? Math.max(0, Math.min(100, Math.round(brightness)))
+                : 0
             };
           }
         }
@@ -162,6 +214,7 @@ export default {
       }
 
       return json({ ok: false, error: "API adresi bulunamadı." }, 404);
+
     } catch (error) {
       return json({
         ok: false,
