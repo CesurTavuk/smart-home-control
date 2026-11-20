@@ -97,6 +97,7 @@ export default {
         app: "SMART HOME CONTROL",
         version: "2.1.0",
         status: "online",
+        controlTokenConfigured: !!env.CONTROL_TOKEN,
         timestamp: new Date().toISOString()
       });
     }
