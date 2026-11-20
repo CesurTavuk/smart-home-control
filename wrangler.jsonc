@@ -4,9 +4,26 @@
   "name": "smart-home-control",
   "main": "./worker.js",
   "compatibility_date": "2026-11-19",
+
   "assets": {
     "directory": "./public",
     "binding": "ASSETS",
     "run_worker_first": ["/api/*"]
+  },
+
+  "kv_namespaces": [
+    {
+      "binding": "SMART_HOME_KV",
+      "id": "3614835e1ff84314b8656cefe4bdfe1c"
+    }
+  ],
+
+  "previews": {
+    "kv_namespaces": [
+      {
+        "binding": "SMART_HOME_KV",
+        "id": "3614835e1ff84314b8656cefe4bdfe1c"
+      }
+    ]
   }
 }
