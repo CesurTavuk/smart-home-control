@@ -37,8 +37,8 @@ const server = http.createServer((req, res) => {
 
 const wss = new WebSocketServer({ noServer: true, maxPayload: 256 });
 server.on("upgrade", (req, socket, head) => {
-  if (req.url !== "/serial") {
-    socket.write("HTTP/1.1 404 Not Found\r\n\r\n");
+  if (req.url !== "/serial" || req.headers.origin !== `http://${HOST}:${WEB_PORT}`) {
+    socket.write("HTTP/1.1 403 Forbidden\r\n\r\n");
     return socket.destroy();
   }
   wss.handleUpgrade(req, socket, head, ws => wss.emit("connection", ws, req));
