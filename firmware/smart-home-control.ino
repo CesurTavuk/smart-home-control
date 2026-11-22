@@ -21,6 +21,7 @@ const byte DIR_IN1[2] = {7, 9};          // D7 -> IN1, D9 -> IN3
 const byte DIR_IN2[2] = {8, 10};         // D8 -> IN2, D10 -> IN4
 const byte CHANNELS = 2;
 const unsigned long MAX_FADE_MS = 10000UL;
+const unsigned long RAMP_INTERVAL_MS = 10UL;
 
 struct Channel {
   int currentPwm;
@@ -28,11 +29,13 @@ struct Channel {
   int targetPwm;
   unsigned long fadeStarted;
   unsigned long fadeDuration;
+  int lastReportedPercent;
 };
 
 Channel channel[CHANNELS];
 unsigned long defaultFadeMs = 1500UL;
 String inputLine;
+unsigned long lastRampUpdate = 0;
 
 int percentToPwm(int percent) {
   percent = constrain(percent, 0, 100);
@@ -43,11 +46,14 @@ int pwmToPercent(int pwm) {
   return (pwm * 100 + 127) / 255;
 }
 
-void reportState(byte index) {
+void reportState(byte index, bool force = false) {
+  int percent = pwmToPercent(channel[index].currentPwm);
+  if (!force && percent == channel[index].lastReportedPercent) return;
+  channel[index].lastReportedPercent = percent;
   Serial.print(F("STATE "));
   Serial.print(index + 1);
   Serial.print(' ');
-  Serial.println(pwmToPercent(channel[index].currentPwm));
+  Serial.println(percent);
 }
 
 void setTarget(byte index, int percent, unsigned long duration) {
@@ -77,8 +83,8 @@ void handleCommand(String line) {
   unsigned long duration = defaultFadeMs;
 
   if (line.equalsIgnoreCase(F("STATUS"))) {
-    reportState(0);
-    reportState(1);
+    reportState(0, true);
+    reportState(1, true);
     return;
   }
 
@@ -130,6 +136,8 @@ void handleCommand(String line) {
 
 void updateOutputs() {
   const unsigned long now = millis();
+  if (now - lastRampUpdate < RAMP_INTERVAL_MS) return;
+  lastRampUpdate = now;
   for (byte i = 0; i < CHANNELS; ++i) {
     Channel &ch = channel[i];
     if (ch.currentPwm == ch.targetPwm) continue;
@@ -158,13 +166,13 @@ void setup() {
     digitalWrite(DIR_IN1[i], HIGH);
     digitalWrite(DIR_IN2[i], LOW);
     analogWrite(PWM_PIN[i], 0);
-    channel[i] = {0, 0, 0, 0, 0};
+    channel[i] = {0, 0, 0, 0, 0, -1};
   }
   Serial.begin(115200);
   inputLine.reserve(64);
   Serial.println(F("SMART_HOME_READY"));
-  reportState(0);
-  reportState(1);
+  reportState(0, true);
+  reportState(1, true);
 }
 
 void loop() {
