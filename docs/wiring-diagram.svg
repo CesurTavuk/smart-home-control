@@ -1,36 +1,62 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1120" height="650" viewBox="0 0 1120 650" role="img" aria-labelledby="title desc">
-  <title id="title">SMART HOME CONTROL Arduino Nano and two MOSFET LED channels</title>
-  <desc id="desc">Arduino Nano D5 and D6 drive two low-side MOSFET gates. An external LED supply powers each load and shares ground with the Nano.</desc>
+<svg xmlns="http://www.w3.org/2000/svg" width="1120" height="700" viewBox="0 0 1120 700" role="img" aria-labelledby="title desc">
+  <title id="title">Arduino Nano ve L298N ile 12 volt şerit LED bağlantısı</title>
+  <desc id="desc">Nano D5 ve D6 PWM ile ENA ve ENB'yi sürer. D7-D10 IN1-IN4'e gider. Şerit LED'ler L298N OUT1-OUT2 ve OUT3-OUT4 çiftlerine bağlanır.</desc>
   <defs>
-    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0 0L10 5L0 10Z" fill="#dce7f4"/></marker>
     <style>
-      .bg{fill:#0b1220}.box{fill:#172338;stroke:#52627a;stroke-width:2}.head{fill:#f4bd35;font:700 22px Arial}.label{fill:#f4f7fb;font:16px Arial}.small{fill:#adbacb;font:13px Arial}.wire{fill:none;stroke:#dce7f4;stroke-width:4}.pwm{fill:none;stroke:#f4bd35;stroke-width:4}.power{fill:none;stroke:#f47777;stroke-width:5}.ground{fill:none;stroke:#8ba0ba;stroke-width:4}.part{fill:#202f45;stroke:#91a4bd;stroke-width:2}.green{fill:#35d39a}.terminal{fill:#f4f7fb}
+      .bg{fill:#0b1220}.board{fill:#172338;stroke:#7386a2;stroke-width:2}.head{fill:#f4bd35;font:700 22px Arial}.label{fill:#f4f7fb;font:16px Arial}.small{fill:#bdc9d8;font:13px Arial}.pin{fill:#263750;stroke:#8194ae;stroke-width:1.5}.control{fill:none;stroke:#f4bd35;stroke-width:3}.out{fill:none;stroke:#7bd8b2;stroke-width:3}.power{fill:none;stroke:#f47777;stroke-width:4}.ground{fill:none;stroke:#9aabc1;stroke-width:3}.load{fill:#202f45;stroke:#91a4bd;stroke-width:2}.plus{fill:#f47777;font:700 16px Arial}.minus{fill:#9aabc1;font:700 16px Arial}
     </style>
   </defs>
-  <rect class="bg" width="1120" height="650" rx="22"/>
-  <text x="44" y="48" class="head">SMART HOME CONTROL · Arduino Nano · 2 × PWM LED</text>
-  <rect x="55" y="110" width="300" height="370" rx="18" class="box"/>
-  <text x="90" y="150" class="head">ARDUINO NANO</text>
-  <text x="85" y="220" class="label">USB ← tablet OTG / computer</text>
-  <rect x="80" y="265" width="180" height="55" rx="10" class="part"/><text x="102" y="299" class="label">D5 · PWM · LED 1</text>
-  <rect x="80" y="350" width="180" height="55" rx="10" class="part"/><text x="102" y="384" class="label">D6 · PWM · LED 2</text>
-  <rect x="80" y="430" width="180" height="32" rx="8" class="part"/><text x="126" y="452" class="label">GND</text>
-  <text x="460" y="117" class="head">KANAL 1</text><text x="810" y="117" class="head">KANAL 2</text>
-  <path class="pwm" d="M260 293H465"/><rect x="315" y="278" width="78" height="30" rx="7" class="part"/><text x="332" y="299" class="small">100 Ω</text>
-  <path class="pwm" d="M393 293H520V224H555"/>
-  <path class="pwm" d="M260 378H815"/><rect x="555" y="363" width="78" height="30" rx="7" class="part"/><text x="572" y="384" class="small">100 Ω</text><path class="pwm" d="M633 378H900V309H935"/>
-  <rect x="485" y="160" width="245" height="55" rx="12" class="part"/><text x="530" y="194" class="label">LED 1 load / strip</text>
-  <rect x="835" y="245" width="245" height="55" rx="12" class="part"/><text x="880" y="279" class="label">LED 2 load / strip</text>
-  <path class="power" d="M607 160V132H957V245"/>
-  <text x="712" y="125" class="small">External supply +V (match LED voltage)</text>
-  <path class="wire" d="M607 215V250"/><path class="wire" d="M957 300V335"/>
-  <rect x="540" y="250" width="135" height="74" rx="14" class="part"/><text x="556" y="279" class="label">Q1 logic FET</text><text x="580" y="302" class="small">D · S · G</text>
-  <rect x="890" y="335" width="135" height="74" rx="14" class="part"/><text x="906" y="364" class="label">Q2 logic FET</text><text x="930" y="387" class="small">D · S · G</text>
-  <path class="ground" d="M607 324V485H765"/><path class="ground" d="M957 409V485H765"/><path class="ground" d="M260 446H420V540H765"/>
-  <rect x="735" y="515" width="130" height="55" rx="12" class="part"/><text x="758" y="548" class="label">Supply 0V</text>
-  <path class="ground" d="M765 485V515"/>
-  <path class="wire" d="M540 293H465V244"/><path class="wire" d="M890 378H835V330"/>
-  <text x="450" y="355" class="small">10 kΩ gate pull-down to GND (each MOSFET)</text>
-  <text x="55" y="610" class="small">Nano GND and external supply 0V must be common. Never power LED loads from Nano pins.</text>
+  <rect class="bg" width="1120" height="700" rx="20"/>
+  <text x="40" y="48" class="head">12 V ŞERİT LED · ARDUINO NANO + L298N</text>
+  <text x="40" y="76" class="small">Harici direnç yok · 12 V, akım sınırlaması kendi üzerinde olan şerit LED kullanın</text>
+
+  <rect x="45" y="120" width="270" height="390" rx="16" class="board"/>
+  <text x="92" y="160" class="head">ARDUINO NANO</text>
+  <text x="76" y="216" class="label">D5 · PWM</text><text x="76" y="253" class="label">D6 · PWM</text>
+  <text x="76" y="310" class="label">D7</text><text x="76" y="347" class="label">D8</text>
+  <text x="76" y="384" class="label">D9</text><text x="76" y="421" class="label">D10</text>
+  <text x="76" y="475" class="label">GND</text>
+  <circle cx="270" cy="210" r="5" class="pin"/><circle cx="270" cy="247" r="5" class="pin"/>
+  <circle cx="270" cy="304" r="5" class="pin"/><circle cx="270" cy="341" r="5" class="pin"/>
+  <circle cx="270" cy="378" r="5" class="pin"/><circle cx="270" cy="415" r="5" class="pin"/>
+  <circle cx="270" cy="469" r="5" class="pin"/>
+
+  <rect x="410" y="120" width="300" height="390" rx="16" class="board"/>
+  <text x="493" y="160" class="head">L298N</text>
+  <text x="440" y="216" class="label">ENA</text><text x="440" y="253" class="label">ENB</text>
+  <text x="440" y="310" class="label">IN1</text><text x="440" y="347" class="label">IN2</text>
+  <text x="440" y="384" class="label">IN3</text><text x="440" y="421" class="label">IN4</text>
+  <text x="440" y="475" class="label">GND</text>
+  <text x="600" y="216" class="label">OUT1</text><text x="600" y="253" class="label">OUT2</text>
+  <text x="600" y="347" class="label">OUT3</text><text x="600" y="384" class="label">OUT4</text>
+  <text x="440" y="500" class="small">+12V / Vs: kart beslemesi</text>
+  <circle cx="700" cy="210" r="5" class="pin"/><circle cx="700" cy="247" r="5" class="pin"/>
+  <circle cx="700" cy="304" r="5" class="pin"/><circle cx="700" cy="341" r="5" class="pin"/>
+  <circle cx="700" cy="378" r="5" class="pin"/><circle cx="700" cy="415" r="5" class="pin"/>
+  <circle cx="700" cy="469" r="5" class="pin"/>
+
+  <path class="control" d="M275 210H410"/><path class="control" d="M275 247H410"/>
+  <path class="control" d="M275 304H410"/><path class="control" d="M275 341H410"/>
+  <path class="control" d="M275 378H410"/><path class="control" d="M275 415H410"/>
+  <text x="323" y="195" class="small">D5→ENA</text><text x="323" y="234" class="small">D6→ENB</text>
+  <text x="323" y="292" class="small">D7→IN1</text><text x="323" y="329" class="small">D8→IN2</text>
+  <text x="323" y="366" class="small">D9→IN3</text><text x="313" y="403" class="small">D10→IN4</text>
+
+  <rect x="835" y="170" width="235" height="130" rx="15" class="load"/>
+  <text x="872" y="205" class="head">ŞERİT LED 1</text><text x="854" y="250" class="plus">+  OUT1</text><text x="854" y="280" class="minus">−  OUT2</text>
+  <path class="out" d="M705 210H815V250H835"/><path class="out" d="M705 247H800V280H835"/>
+
+  <rect x="835" y="325" width="235" height="130" rx="15" class="load"/>
+  <text x="872" y="360" class="head">ŞERİT LED 2</text><text x="854" y="405" class="plus">+  OUT3</text><text x="854" y="435" class="minus">−  OUT4</text>
+  <path class="out" d="M705 378H790V405H835"/><path class="out" d="M705 415H815V435H835"/>
+
+  <rect x="435" y="565" width="270" height="82" rx="14" class="load"/>
+  <text x="475" y="600" class="label">12 V GÜÇ KAYNAĞI</text><text x="475" y="628" class="small">+12 V (+) · 0 V (−)</text>
+  <path class="power" d="M705 585H760V535H560V510"/>
+  <text x="770" y="535" class="plus">+12 V → L298N +12V/Vs</text>
+  <path class="ground" d="M570 647V660H25V469H270"/><path class="ground" d="M700 469V660"/>
+  <text x="780" y="552" class="small">Nano GND, L298N GND ve</text><text x="780" y="572" class="small">besleme 0 V ortak olmalı</text>
+
+  <text x="45" y="690" class="small">ENA/ENB jumper'larını çıkarın. 5V-EN farklıdır; kart kılavuzuna göre kullanın.</text>
 </svg>
 
