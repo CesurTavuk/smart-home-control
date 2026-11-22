@@ -1,36 +1,42 @@
 # SMART HOME CONTROL
 
-## Files
+## Dosyalar
 
-- `index.html` — two semicircular brightness gauges and two-channel control UI.
-- `smart-home-control.ino` — Arduino Nano firmware; USB serial 115200 baud.
-- `wiring-diagram.md` — MOSFET wiring and parts.
-- `android-usb-bridge/` — optional local WebSocket-to-TCP adapter for an Android USB/TCP bridge app.
+- `index.html` — giriş ekranı ve iki yarım daire parlaklık göstergeli panel.
+- `smart-home-control.ino` — Arduino Nano ve L298N için USB seri kodu.
+- `wiring-diagram.svg` — Türkçe bağlantı şeması.
+- `wiring-diagram.md` — pin tablosu ve kurulum adımları.
+- `android-usb-bridge/` — Android’de TCPUART TCP bağlantısını yerel WebSocket’e aktaran köprü.
 
-## Computer: Chrome with direct USB
+## Giriş
 
-1. Upload `smart-home-control.ino` to the Nano.
-2. Open `index.html` in desktop Chrome or Edge. If the browser does not offer a USB port picker, serve the file from a secure HTTPS page or from localhost.
-3. Close Arduino IDE Serial Monitor or any other terminal using the Nano port.
-4. Press **USB’Yİ SEÇ VE BAĞLAN**, select the Nano, and allow access.
+Kullanıcı adı `Smart Home` olarak kalır. Şifre, Cloudflare Worker’daki `CONTROL_TOKEN` ile sunucu üzerinden doğrulanır; şifre HTML’e yazılmaz veya kalıcı olarak saklanmaz. Arayüz giriş sırasında `/api/state` adresine `Authorization: Bearer ...` gönderir.
 
-The Web Serial API is supported by desktop Chrome/Edge. The USB terminal program and the browser cannot use the same serial port simultaneously; close the terminal before using the page.
+## Bilgisayar
 
-## Android: separate USB bridge required
+1. `smart-home-control.ino` dosyasını Nano’ya yükleyin.
+2. HTML’i Cloudflare’da yayınlanan HTTPS adresinde masaüstü Chrome/Edge ile açın ve giriş yapın.
+3. Arduino IDE Serial Monitor’ü kapatın; aynı USB seri portu aynı anda iki program açamaz.
+4. **USB’Yİ SEÇ VE BAĞLAN** düğmesine basıp Nano portunu seçin.
 
-Kai Morich's **Serial USB Terminal** is a terminal for USB serial devices. Its published features do not provide a browser API or a WebSocket server, so it cannot serve as the page's intermediary while holding the Nano's USB connection.
+## L298N ve 12 V şerit LED
 
-An alternative is **TCPUART transparent Bridge** (Google Play), which exposes USB serial data through a TCP socket, plus the small local adapter in `android-usb-bridge/`. The adapter makes a localhost WebSocket for the HTML page. This is a separate setup and is not the Serial USB Terminal app.
+Nano D5→ENA, D6→ENB, D7→IN1, D8→IN2, D9→IN3, D10→IN4. ENA/ENB jumper’ları çıkarılır. Şerit LED 1 OUT1 (+) ve OUT2 (−), şerit LED 2 OUT3 (+) ve OUT4 (−) arasına bağlanır. L298N +12V/Vs harici 12 V kaynağa, GND ise kaynağın eksisine ve Nano GND’ye bağlanır.
 
-1. Install TCPUART transparent Bridge and Termux on the Android tablet. Connect Nano over OTG and grant USB access in TCPUART.
-2. In TCPUART, choose TCP **server** mode, set port `7000`, then start it. Keep the tablet on a trusted network and do not forward this port from a router; the app may listen on the tablet's network interfaces.
-3. In Termux, install Node.js, copy this folder and `index.html` into the same parent layout, then run `npm install` in `android-usb-bridge/`.
-4. Start the adapter with `node bridge.js`. It binds only to `127.0.0.1`, serves the panel at `http://127.0.0.1:8765/`, and connects to the TCPUART listener at `127.0.0.1:7000`.
-5. Open that local address in the tablet browser. If `navigator.serial` is unavailable, the panel automatically tries its local WebSocket bridge.
+Harici direnç eklenmez. Sadece 12 V akım sınırlaması üzerinde bulunan şerit LED kullanın; çıplak LED’i dirençsiz bağlamayın. L298N ısınabilir ve çıkış gerilimi beslemeden düşük olur; şerit akımı kartın sınırında kalmalı.
 
-If TCPUART uses a different TCP port, start the adapter with `SERIAL_PORT=<port> node bridge.js`. The web page and WebSocket adapter bind only to loopback. A terminal application must not open the Nano at the same time as TCPUART.
+## Android USB köprüsü
 
-## Protocol
+Serial USB Terminal uygulamasının yayımlanan özelliklerinde web sayfasına USB aktarımı veya WebSocket sunucusu belgelenmiyor. Android Chrome da Web Serial API’yi resmî olarak sunmuyor. Köprü olarak TCPUART transparent Bridge ve Termux kullanılır.
 
-Commands are newline-terminated text: `SET 1 75 1500`, `ON 2`, `OFF 1`, `FADE 500`, `STATUS`. The Arduino reports `STATE <channel> <brightness-percent>` and status text at 115200 baud.
+1. TCPUART’ta USB UART’a bağlanıp TCP **server** modunu port `7000` ile başlatın.
+2. Termux’ta Node.js kurun; `index.html` ve `android-usb-bridge/` klasörünü aynı ana klasöre koyun.
+3. `android-usb-bridge/` içinde `npm install` ardından `node bridge.js` çalıştırın.
+4. Tablet tarayıcısında `http://127.0.0.1:8765/` adresini açın. Giriş doğrulaması Cloudflare Worker’a güvenli HTTPS üzerinden iletilir; seri veri yerel köprüden taşınır.
+
+TCPUART portunu değiştirdiyseniz `SERIAL_PORT=<port>` ortam değişkenini verin. TCPUART aynı USB portunu kullandığı için Serial USB Terminal’i aynı anda bağlamayın. TCP portunu internete yönlendirmeyin.
+
+## Seri komutları
+
+`115200` baud, 8-N-1. Panel `SET 1 75 1500`, `ON 2`, `OFF 1`, `FADE 500` ve `STATUS` gönderir. Arduino `STATE <kanal> <yüzde>` ile geri bildirim verir.
 
