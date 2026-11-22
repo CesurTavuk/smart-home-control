@@ -16,7 +16,7 @@ h1{font-size:19px;margin:0}h1 span{color:var(--accent)}main{max-width:900px;marg
 button,select{border:0;border-radius:11px;padding:12px 15px;font-weight:700;font-size:14px;cursor:pointer}
 button:disabled{opacity:.45;cursor:not-allowed}.connect{background:var(--accent);color:#171717}.secondary{background:#2b3b53;color:white}.on{background:#14634d;color:white}.off{background:#633b43;color:white}
 .grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:15px}
-.led h2{font-size:19px;margin:0}.value{font-size:34px;font-weight:800;color:var(--accent);margin:18px 0 4px}
+.led h2{font-size:19px;margin:0}.value{font-size:34px;font-weight:800;color:var(--accent);margin:0}.gauge{width:min(100%,340px);margin:18px auto 5px;position:relative}.gauge svg{width:100%;display:block;overflow:visible}.gauge-value{position:absolute;left:0;right:0;bottom:8px;text-align:center;font-size:34px;font-weight:800;color:var(--text)}.gauge-value small{font-size:13px;color:var(--muted);font-weight:500}
 small,.hint{color:var(--muted);font-size:12px}.slider{width:100%;accent-color:var(--accent);margin:20px 0 8px}
 .controls{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:14px}
 .presets{display:flex;gap:8px;margin-top:10px}.presets button{flex:1}
@@ -71,7 +71,13 @@ footer{text-align:center;color:var(--muted);font-size:12px;padding:8px 0 24px}
 <section class="grid">
  <article class="led">
   <div class="row"><h2>💡 LED 1</h2><span id="state1" class="hint">KAPALI</span></div>
-  <div class="value"><span id="value1">0</span><small>% parlaklık</small></div>
+  <div class="gauge">
+   <svg viewBox="0 0 300 175" role="img" aria-label="LED 1 parlaklık göstergesi">
+    <path d="M30 150 A120 120 0 0 1 270 150" fill="none" stroke="#35445a" stroke-width="16" stroke-linecap="round"/>
+    <path class="gauge-progress" d="M30 150 A120 120 0 0 1 270 150" fill="none" stroke="#f4bd35" stroke-width="16" stroke-linecap="round" stroke-dasharray="0 377"/>
+   </svg>
+   <div class="gauge-value"><span id="value1">0</span>%<br><small>PARLAKLIK</small></div>
+  </div>
   <input class="slider" id="slider1" type="range" min="0" max="100" value="0" aria-label="LED 1 parlaklık">
   <div class="row"><small>0%</small><small>100%</small></div>
   <div class="controls"><button class="on" data-action="ON" data-ch="1">AÇ</button><button class="off" data-action="OFF" data-ch="1">KAPAT</button></div>
@@ -79,7 +85,13 @@ footer{text-align:center;color:var(--muted);font-size:12px;padding:8px 0 24px}
  </article>
  <article class="led">
   <div class="row"><h2>💡 LED 2</h2><span id="state2" class="hint">KAPALI</span></div>
-  <div class="value"><span id="value2">0</span><small>% parlaklık</small></div>
+  <div class="gauge">
+   <svg viewBox="0 0 300 175" role="img" aria-label="LED 2 parlaklık göstergesi">
+    <path d="M30 150 A120 120 0 0 1 270 150" fill="none" stroke="#35445a" stroke-width="16" stroke-linecap="round"/>
+    <path class="gauge-progress" d="M30 150 A120 120 0 0 1 270 150" fill="none" stroke="#f4bd35" stroke-width="16" stroke-linecap="round" stroke-dasharray="0 377"/>
+   </svg>
+   <div class="gauge-value"><span id="value2">0</span>%<br><small>PARLAKLIK</small></div>
+  </div>
   <input class="slider" id="slider2" type="range" min="0" max="100" value="0" aria-label="LED 2 parlaklık">
   <div class="row"><small>0%</small><small>100%</small></div>
   <div class="controls"><button class="on" data-action="ON" data-ch="2">AÇ</button><button class="off" data-action="OFF" data-ch="2">KAPAT</button></div>
@@ -133,7 +145,7 @@ function send(line){
 }
 function updateChannel(ch,pct){
  pct=Math.max(0,Math.min(100,Math.round(Number(pct)||0)));
- brightness[ch]=pct;$("value"+ch).textContent=pct;$("slider"+ch).value=pct;
+ brightness[ch]=pct;$("value"+ch).textContent=pct;$("slider"+ch).value=pct;const arc=document.querySelector("#slider"+ch).closest(".led").querySelector(".gauge-progress");if(arc)arc.setAttribute("stroke-dasharray",(377*pct/100)+" 377");
  $("state"+ch).textContent=pct>0?"AÇIK":"KAPALI";
 }
 function sendSet(ch,pct){send("SET "+ch+" "+pct+" "+$("fade").value)}
