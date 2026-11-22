@@ -11,10 +11,23 @@
 header{padding:20px max(18px,env(safe-area-inset-left));border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;gap:12px}h1{font-size:18px;letter-spacing:.08em;margin:0}h1 span{color:var(--accent)}main{max-width:940px;margin:auto;padding:18px}.panel,.led{background:linear-gradient(145deg,#19273c,#131f32);border:1px solid var(--line);border-radius:20px;padding:18px;margin-bottom:16px;box-shadow:0 14px 40px #0002}.row{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}.hint,small{color:var(--muted);font-size:12px}.hint{line-height:1.5}.status{color:var(--muted);font-size:13px}.status:before{content:"";display:inline-block;width:9px;height:9px;border-radius:50%;background:var(--red);margin-right:8px}.status.ok:before{background:var(--green)}
 button,select{border:0;border-radius:12px;padding:12px 15px;font-weight:750;font-size:14px;cursor:pointer}button:disabled{opacity:.42;cursor:not-allowed}.connect{background:var(--accent);color:#171717}.secondary{background:#2b3b53;color:white}.on{background:#14634d;color:white}.off{background:#633b43;color:white}.connect-row{display:flex;gap:9px;flex-wrap:wrap}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:15px}.led h2{font-size:19px;margin:0}.gauge{width:min(100%,340px);margin:18px auto 5px;position:relative}.gauge svg{width:100%;display:block;overflow:visible}.gauge-value{position:absolute;left:0;right:0;bottom:8px;text-align:center;font-size:36px;font-weight:850}.gauge-value small{display:block;letter-spacing:.15em}.slider{width:100%;accent-color:var(--accent);margin:18px 0 8px}.controls{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:14px}.presets{display:flex;gap:8px;margin-top:10px}.presets button{flex:1}.select-row{margin-top:16px}select{background:#2b3b53;color:white}#log{white-space:pre-wrap;word-break:break-word;max-height:135px;overflow:auto;font:12px/1.5 ui-monospace,monospace;color:#c5d0df;background:#0d1727;padding:11px;border-radius:12px}.badge{border:1px solid #42536d;border-radius:99px;padding:6px 10px;color:var(--muted);font-size:11px;letter-spacing:.06em}.warning{border-left:3px solid var(--accent);padding:9px 12px;background:#f4bd3512;border-radius:0 10px 10px 0}.footer{text-align:center;color:var(--muted);font-size:12px;padding:8px 0 24px}
 @media(max-width:620px){.grid{grid-template-columns:1fr}header{align-items:flex-start;flex-direction:column}.led{padding:16px}main{padding:14px}}
+#loginScreen{min-height:100vh;display:grid;place-items:center;padding:22px}.login-card{width:min(100%,410px);background:var(--panel);border:1px solid var(--line);border-radius:22px;padding:28px;box-shadow:0 18px 55px #0005}.login-card h2{margin:0 0 8px;font-size:25px}.login-card p{color:var(--muted);font-size:13px;line-height:1.5}.login-card label{display:block;margin:16px 0 7px;font-size:13px;color:var(--muted)}.login-card input{width:100%;padding:14px;border:1px solid var(--line);border-radius:11px;background:#0d1727;color:var(--text);font-size:16px;outline:none}.login-card input:focus{border-color:var(--accent)}.login-card button{width:100%;margin-top:20px;background:var(--accent);color:#171717}#loginError{min-height:18px;color:var(--red);font-size:13px;margin-top:12px}#appShell[hidden],#loginScreen[hidden]{display:none!important}#logout{background:#633b43;color:white}
 </style>
 </head>
 <body>
-<header><h1>SMART HOME <span>CONTROL</span></h1><div class="row"><div id="status" class="status">Bağlı değil</div><span id="modeBadge" class="badge">USB SERİ</span></div></header>
+<section id="loginScreen">
+ <div class="login-card">
+  <h2>SMART HOME <span style="color:var(--accent)">CONTROL</span></h2>
+  <p>Kontrol paneline devam etmek için mevcut hesabınla giriş yap.</p>
+  <form id="loginForm">
+   <label for="loginUser">Kullanıcı adı</label><input id="loginUser" name="username" autocomplete="username" required>
+   <label for="loginPass">Şifre</label><input id="loginPass" name="password" type="password" autocomplete="current-password" required>
+   <button id="loginSubmit" type="submit">GİRİŞ YAP</button><div id="loginError" role="alert"></div>
+  </form>
+ </div>
+</section>
+<div id="appShell" hidden>
+<header><h1>SMART HOME <span>CONTROL</span></h1><div class="row"><div id="status" class="status">Bağlı değil</div><span id="modeBadge" class="badge">USB SERİ</span><button id="logout" type="button">ÇIKIŞ</button></div></header>
 <main>
 <section class="panel">
  <div class="row"><div><b>Arduino Nano bağlantısı</b><div id="help" class="hint">Masaüstü Chrome’da USB seri portunu doğrudan aç.</div></div>
@@ -30,11 +43,26 @@ button,select{border:0;border-radius:12px;padding:12px 15px;font-weight:750;font
 <section class="panel"><div class="row"><b>Seri geri bildirimi</b><button id="statusBtn" class="secondary" disabled>DURUMU SORGULA</button></div><p class="hint">Nano’dan gelen durum mesajları:</p><div id="log">Henüz veri alınmadı.</div></section>
 <footer class="footer">SMART HOME CONTROL · ARDUINO NANO · 2 PWM KANAL</footer>
 </main>
+</div>
 <script>
 "use strict";
 const $=id=>document.getElementById(id);
 let port=null,reader=null,writer=null,readTask=null,connected=false,mode="serial",fadeMs=1500;
 const decoder=new TextDecoder(),encoder=new TextEncoder();let pendingText="";
+function showApp(){$("loginScreen").hidden=true;$("appShell").hidden=false}
+function showLogin(){$("appShell").hidden=true;$("loginScreen").hidden=false}
+$("loginForm").addEventListener("submit",async e=>{
+ e.preventDefault();const btn=$("loginSubmit"),err=$("loginError");err.textContent="";btn.disabled=true;btn.textContent="KONTROL EDİLİYOR…";
+ try{
+  const username=$("loginUser").value.trim(),password=$("loginPass").value;
+  if(username!=="Smart Home")throw new Error("Kullanıcı adı hatalı.");
+  const response=await fetch("/api/state",{method:"GET",headers:{"Authorization":"Bearer "+password},cache:"no-store"});
+  const data=await response.json().catch(()=>({}));
+  if(!response.ok||data.ok!==true||!data.target)throw new Error(data.error||"Giriş bilgileri doğrulanamadı.");
+  $("loginPass").value="";showApp();
+ }catch(error){err.textContent=error.message.includes("Failed to fetch")?"Sunucuya ulaşılamadı. Cloudflare sunucu bağlantısını kontrol et.":error.message}
+ finally{btn.disabled=false;btn.textContent="GİRİŞ YAP"}
+});
 function log(s){$("log").textContent=(s+"\n"+$("log").textContent).slice(0,1800)}
 function setConnected(ok,label="USB seri"){
  connected=ok;$("status").textContent=ok?"Bağlandı: "+label:"Bağlı değil";$("status").className=ok?"status ok":"status";
@@ -50,6 +78,7 @@ async function connectUSB(){if(!window.isSecureContext){log("Web Serial için g�
 async function disconnect(){try{setConnected(false);if(mode==="serial"){if(reader){try{await reader.cancel()}catch{}}if(writer){try{writer.releaseLock()}catch{}writer=null}if(port){try{await port.close()}catch{}port=null}}else if(androidSocket){androidSocket.close();androidSocket=null}}catch(e){log("Kapatma uyarısı: "+e.message)}finally{setConnected(false);log("Bağlantı kapatıldı.")}}
 async function connectAndroidBridge(){if(!("WebSocket" in window)){log("Bu tarayıcı WebSocket desteklemiyor.");return}try{mode="bridge";androidSocket=new WebSocket("ws://127.0.0.1:8765/serial");androidSocket.onopen=()=>{if(androidSocket.readyState!==WebSocket.OPEN)return;$("modeBadge").textContent="ANDROID KÖPRÜ";$("help").textContent="USB seri köprüsü yerel ağda çalışıyor.";setConnected(true,"Android USB köprüsü");send("STATUS")};androidSocket.onmessage=e=>String(e.data).split(/\r?\n/).forEach(handleLine);androidSocket.onerror=()=>log("Yerel USB köprüsüne erişilemiyor. Köprü uygulamasını ve port ayarını kontrol et.");androidSocket.onclose=()=>{androidSocket=null;setConnected(false);log("Android köprüsü bağlantısı kapandı.")}}catch(e){log("Köprü bağlantı hatası: "+e.message)}}
 $("connect").addEventListener("click",()=>{if("serial" in navigator)connectUSB();else connectAndroidBridge()});$("disconnect").addEventListener("click",disconnect);$("fade").addEventListener("change",()=>{fadeMs=Number($("fade").value);send("FADE "+fadeMs)});$("statusBtn").addEventListener("click",()=>send("STATUS"));
+$("logout").addEventListener("click",async()=>{if(connected)await disconnect();showLogin()});
 document.querySelectorAll("[data-action]").forEach(b=>b.addEventListener("click",()=>send(b.dataset.action+" "+b.dataset.ch)));document.querySelectorAll("[data-set]").forEach(b=>b.addEventListener("click",()=>{let ch=+b.dataset.set,pct=+b.dataset.value;updateChannel(ch,pct);send("SET "+ch+" "+pct+" "+fadeMs)}));[1,2].forEach(ch=>{$("slider"+ch).addEventListener("input",e=>$("value"+ch).textContent=e.target.value);$("slider"+ch).addEventListener("change",e=>{let pct=+e.target.value;updateChannel(ch,pct);send("SET "+ch+" "+pct+" "+fadeMs)})});
 if("serial" in navigator){$("browserNote").textContent="Masaüstü Chrome/Edge: doğrudan USB seri. Bir terminal programı aynı COM portunu açıksa kapat; aynı portu iki uygulama eşzamanlı kullanamaz."}else{$("browserNote").textContent="navigator.serial bu tarayıcıda bulunamadı. Android Chrome resmi Web Serial desteğine sahip değil; Android’de ayrıca USB→WebSocket köprüsü gerekir."}
 navigator.serial?.addEventListener("disconnect",()=>{if(connected&&mode==="serial")disconnect()});setConnected(false);
