@@ -2,17 +2,17 @@
 
 ## Files
 
-- `index.html` â€” two semicircular brightness gauges and two-channel control UI.
-- `smart-home-control.ino` â€” Arduino Nano firmware; USB serial 115200 baud.
-- `wiring-diagram.md` â€” MOSFET wiring and parts.
-- `android-usb-bridge/` â€” optional local WebSocket-to-TCP adapter for an Android USB/TCP bridge app.
+- `index.html` — two semicircular brightness gauges and two-channel control UI.
+- `smart-home-control.ino` — Arduino Nano firmware; USB serial 115200 baud.
+- `wiring-diagram.md` — MOSFET wiring and parts.
+- `android-usb-bridge/` — optional local WebSocket-to-TCP adapter for an Android USB/TCP bridge app.
 
 ## Computer: Chrome with direct USB
 
 1. Upload `smart-home-control.ino` to the Nano.
 2. Open `index.html` in desktop Chrome or Edge. If the browser does not offer a USB port picker, serve the file from a secure HTTPS page or from localhost.
 3. Close Arduino IDE Serial Monitor or any other terminal using the Nano port.
-4. Press **USBâ€™YÄ° SEÃ‡ VE BAÄLAN**, select the Nano, and allow access.
+4. Press **USB’Yİ SEÇ VE BAĞLAN**, select the Nano, and allow access.
 
 The Web Serial API is supported by desktop Chrome/Edge. The USB terminal program and the browser cannot use the same serial port simultaneously; close the terminal before using the page.
 
