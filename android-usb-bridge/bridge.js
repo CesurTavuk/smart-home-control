@@ -6,7 +6,8 @@ const http = require("node:http");
 const fs = require("node:fs");
 const path = require("node:path");
 const net = require("node:net");
-const { WebSocketServer } = require("ws");
+const WebSocket = require("ws");
+const { WebSocketServer } = WebSocket;
 
 const HOST = "127.0.0.1";
 const WEB_PORT = Number(process.env.WEB_PORT || 8765);
@@ -27,7 +28,7 @@ const server = http.createServer((req, res) => {
     res.writeHead(200, {
       "Content-Type": "text/html; charset=utf-8",
       "Cache-Control": "no-store",
-      "Content-Security-Policy": "default-src 'self'; connect-src 'self' ws://127.0.0.1:8765",
+      "Content-Security-Policy": "default-src 'self'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; connect-src 'self' ws://127.0.0.1:8765",
       "X-Content-Type-Options": "nosniff"
     });
     res.end(html);
@@ -47,10 +48,10 @@ wss.on("connection", ws => {
   const serial = net.createConnection({ host: SERIAL_HOST, port: SERIAL_PORT });
   serial.setNoDelay(true);
   serial.on("connect", () => console.log(`WebSocket connected to USB serial TCP ${SERIAL_HOST}:${SERIAL_PORT}`));
-  serial.on("data", data => { if (ws.readyState === ws.OPEN) ws.send(data.toString("utf8")); });
+  serial.on("data", data => { if (ws.readyState === WebSocket.OPEN) ws.send(data.toString("utf8")); });
   serial.on("error", err => {
     console.error(`Serial TCP error: ${err.message}`);
-    if (ws.readyState === ws.OPEN) ws.close(1011, "USB serial bridge unavailable");
+    if (ws.readyState === WebSocket.OPEN) ws.close(1011, "USB serial bridge unavailable");
   });
   ws.on("message", data => {
     if (serial.writable && !serial.destroyed) serial.write(data);
