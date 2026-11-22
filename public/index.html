@@ -1,450 +1,171 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="tr">
 <head>
-<meta charset="UTF-8">
+<meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#101827">
 <title>SMART HOME CONTROL</title>
 <style>
-:root{
- --bg:#0b1220;--panel:#172338;--panel2:#22334c;
- --text:#f4f7fb;--muted:#9aabc1;
- --accent:#f4bd35;--green:#35d39a;--red:#f47777;
-}
-*{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--text);font-family:Arial,sans-serif;min-height:100vh}
-button,input{font:inherit}
-button{cursor:pointer}
-.hidden{display:none!important}
-
-/* LOGIN */
-#loginScreen{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}
-.login-card{width:100%;max-width:390px;background:var(--panel);border:1px solid #293950;border-radius:25px;padding:30px;text-align:center}
-.logo-icon{font-size:45px;margin-bottom:12px}
-.login-card h1{font-size:23px;margin:0}
-.login-card h1 span{color:var(--accent)}
-.login-card p{color:var(--muted);font-size:13px}
-.login-card input{width:100%;padding:15px;margin-top:18px;border-radius:12px;border:1px solid #40516b;background:#0d1727;color:white;outline:none}
-.primary{width:100%;padding:15px;margin-top:12px;border:0;border-radius:12px;background:var(--accent);color:#171717;font-weight:800}
-.login-error{color:var(--red);font-size:13px;min-height:18px;margin-top:10px}
-
-/* HEADER */
-header{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:20px 24px;border-bottom:1px solid #29374d}
-.brand{font-size:20px;font-weight:800;letter-spacing:1px}
-.brand span{color:var(--accent)}
-.header-right{display:flex;align-items:center;gap:15px}
-.status{font-size:12px;color:var(--muted)}
-.status i{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--red);margin-right:6px}
-.status.online i{background:var(--green)}
-.logout{padding:9px 12px;border:1px solid #40516b;border-radius:9px;background:transparent;color:white;font-size:12px}
-
-main{max-width:1100px;margin:auto;padding:22px}
-.cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}
-.card{background:var(--panel);border:1px solid #293950;border-radius:22px;padding:20px;min-width:0}
-.card-head{display:flex;justify-content:space-between;align-items:center}
-.card h2{margin:0;font-size:20px}
-.state{font-size:12px;padding:7px 12px;border-radius:30px;background:#303b4c;color:var(--muted)}
-.state.on{background:#123d35;color:var(--green)}
-
-.gauge{width:min(100%,340px);margin:18px auto 5px;position:relative}
-.gauge svg{width:100%;display:block;overflow:visible}
-.gauge-value{position:absolute;left:0;right:0;bottom:8px;text-align:center;font-size:34px;font-weight:800}
-.gauge-value small{font-size:13px;color:var(--muted);font-weight:500}
-.slider-wrap{margin:14px 0 20px}
-input[type=range]{width:100%;accent-color:var(--accent);cursor:pointer}
-.range-labels{display:flex;justify-content:space-between;color:var(--muted);font-size:12px;margin-top:5px}
-.buttons{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
-.action{border:0;border-radius:12px;padding:14px 10px;color:white;font-size:15px;font-weight:700;background:var(--panel2);transition:.15s}
-.action:active{transform:scale(.97)}
-.action:disabled{opacity:.5}
-.on-btn{background:#14634d}
-.off-btn{background:#633b43}
-.preset{border:1px solid #43516a}
-.preset.active{background:#66501d;border-color:var(--accent);color:#ffe39a}
-
-/* VOICE */
-.voice{margin-top:20px;background:var(--panel);border:1px solid #293950;border-radius:22px;padding:22px;display:flex;align-items:center;justify-content:space-between;gap:20px}
-.voice h2{margin:0 0 7px;font-size:19px}
-.voice p{margin:0;color:var(--muted);font-size:13px;line-height:1.5}
-.mic{width:62px;height:62px;border-radius:50%;background:#66501d;color:#ffe39a;font-size:25px;flex-shrink:0;border:0}
-.mic.listening{background:#8a303b;animation:pulse 1s infinite}
-@keyframes pulse{50%{box-shadow:0 0 0 12px #8a303b33}}
-.message{min-height:22px;margin:15px 2px 0;color:var(--muted);font-size:13px}
-footer{text-align:center;color:#71829a;font-size:12px;padding:22px}
-
-@media(max-width:650px){
- header{padding:15px}
- main{padding:14px}
- .cards{grid-template-columns:1fr}
- .brand{font-size:16px}
- .voice{padding:17px}
- .status{max-width:105px}
-}
+:root{color-scheme:dark;--bg:#0b1220;--panel:#172338;--line:#2b3b53;--text:#f4f7fb;--muted:#9aabc1;--accent:#f4bd35;--green:#35d39a;--red:#f47777}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:16px Arial,sans-serif}
+header{padding:22px 18px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;gap:12px}
+h1{font-size:19px;margin:0}h1 span{color:var(--accent)}main{max-width:900px;margin:auto;padding:18px}
+.panel,.led{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:18px;margin-bottom:16px}
+.row{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.status{color:var(--muted);font-size:13px}.status:before{content:"";display:inline-block;width:9px;height:9px;border-radius:50%;background:var(--red);margin-right:8px}.status.ok:before{background:var(--green)}
+button,select{border:0;border-radius:11px;padding:12px 15px;font-weight:700;font-size:14px;cursor:pointer}
+button:disabled{opacity:.45;cursor:not-allowed}.connect{background:var(--accent);color:#171717}.secondary{background:#2b3b53;color:white}.on{background:#14634d;color:white}.off{background:#633b43;color:white}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:15px}
+.led h2{font-size:19px;margin:0}.value{font-size:34px;font-weight:800;color:var(--accent);margin:18px 0 4px}
+small,.hint{color:var(--muted);font-size:12px}.slider{width:100%;accent-color:var(--accent);margin:20px 0 8px}
+.controls{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:14px}
+.presets{display:flex;gap:8px;margin-top:10px}.presets button{flex:1}
+select{background:#2b3b53;color:white}
+#log{white-space:pre-wrap;word-break:break-word;max-height:120px;overflow:auto;font:12px monospace;color:#c5d0df;background:#0d1727;padding:10px;border-radius:10px}
+footer{text-align:center;color:var(--muted);font-size:12px;padding:8px 0 24px}
+@media(max-width:620px){.grid{grid-template-columns:1fr}header{align-items:flex-start;flex-direction:column}.led{padding:16px}}
+#loginScreen{min-height:100vh;display:grid;place-items:center;padding:22px}
+.login-card{width:min(100%,410px);background:var(--panel);border:1px solid var(--line);border-radius:22px;padding:28px;box-shadow:0 18px 55px #0005}
+.login-card h2{margin:0 0 8px;font-size:25px}.login-card p{color:var(--muted);font-size:13px;line-height:1.5}
+.login-card label{display:block;margin:16px 0 7px;font-size:13px;color:var(--muted)}
+.login-card input{width:100%;padding:14px;border:1px solid var(--line);border-radius:11px;background:#0d1727;color:var(--text);font-size:16px;outline:none}
+.login-card input:focus{border-color:var(--accent)}
+.login-card button{width:100%;margin-top:20px;background:var(--accent);color:#171717}
+#loginError{min-height:18px;color:var(--red);font-size:13px;margin-top:12px}
+#appShell[hidden],#loginScreen[hidden]{display:none!important}
+#logout{background:#633b43;color:white}
 </style>
 </head>
 <body>
-
 <section id="loginScreen">
  <div class="login-card">
-  <div class="logo-icon">🏠</div>
-  <h1>SMART HOME <span>CONTROL</span></h1>
-  <p>Akıllı ev kontrol sistemine hoş geldin.</p>
+  <h2>SMART HOME <span style="color:var(--accent)">CONTROL</span></h2>
+  <p>Kontrol paneline devam etmek için hesabınla giriş yap.</p>
   <form id="loginForm">
-   <input id="password" type="password" placeholder="Kontrol şifresi" autocomplete="current-password" required>
-   <button class="primary" type="submit">GİRİŞ YAP</button>
+   <label for="loginUser">Kullanıcı adı</label>
+   <input id="loginUser" name="username" autocomplete="username" required>
+   <label for="loginPass">Şifre</label>
+   <input id="loginPass" name="password" type="password" autocomplete="current-password" required>
+   <button id="loginSubmit" type="submit">GİRİŞ YAP</button>
+   <div id="loginError" role="alert"></div>
   </form>
-  <div class="login-error" id="loginError"></div>
  </div>
 </section>
-
-<section id="appScreen" class="hidden">
- <header>
-  <div class="brand">SMART HOME <span>CONTROL</span></div>
-  <div class="header-right">
-   <div class="status" id="connection"><i></i><span>Bağlantı bekleniyor</span></div>
-   <button class="logout" onclick="logout()">ÇIKIŞ</button>
+<div id="appShell" hidden>
+<header><h1>SMART HOME <span>CONTROL</span></h1><div class="row"><div id="status" class="status">Bluetooth bağlantısı yok</div><button id="logout" type="button">ÇIKIŞ</button></div></header>
+<main>
+<section class="panel">
+ <div class="row">
+  <div><b>HC-05 Bluetooth</b><div class="hint">Android uygulaması içindeki Bluetooth köprüsünü kullanır.</div></div>
+  <div class="row">
+   <button class="connect" id="connect">BAĞLAN</button>
+   <button class="secondary" id="disconnect" disabled>AYRIL</button>
   </div>
- </header>
-
- <main>
-  <section class="cards" id="ledCards"></section>
-  <section class="voice">
-   <div>
-    <h2>🎙 Sesli Kontrol</h2>
-    <p id="voiceText">Mikrofon düğmesine bas ve komutunu söyle.<br>Örnek: LED 1 parlaklığını yüzde 35 yap.</p>
-   </div>
-   <button class="mic" id="micButton">🎙</button>
-  </section>
-  <div class="message" id="message">Kontrol paneli hazır.</div>
- </main>
- <footer>SMART HOME CONTROL · LED 1 + LED 2</footer>
+ </div>
+ <div class="row" style="margin-top:16px">
+  <label for="fade">Yumuşak geçiş süresi</label>
+  <select id="fade"><option value="500">0,5 saniye</option><option value="1000">1 saniye</option><option value="1500" selected>1,5 saniye</option><option value="2500">2,5 saniye</option><option value="4000">4 saniye</option></select>
+ </div>
+ <p class="hint">Bağlan düğmesi, Android WebView köprüsünde kayıtlı HC-05 cihazını açar. Normal Chrome sekmesinde HC-05 Classic bağlantısı kurulamaz.</p>
 </section>
-
+<section class="grid">
+ <article class="led">
+  <div class="row"><h2>💡 LED 1</h2><span id="state1" class="hint">KAPALI</span></div>
+  <div class="value"><span id="value1">0</span><small>% parlaklık</small></div>
+  <input class="slider" id="slider1" type="range" min="0" max="100" value="0" aria-label="LED 1 parlaklık">
+  <div class="row"><small>0%</small><small>100%</small></div>
+  <div class="controls"><button class="on" data-action="ON" data-ch="1">AÇ</button><button class="off" data-action="OFF" data-ch="1">KAPAT</button></div>
+  <div class="presets"><button class="secondary" data-set="1" data-value="50">%50</button><button class="secondary" data-set="1" data-value="100">%100</button></div>
+ </article>
+ <article class="led">
+  <div class="row"><h2>💡 LED 2</h2><span id="state2" class="hint">KAPALI</span></div>
+  <div class="value"><span id="value2">0</span><small>% parlaklık</small></div>
+  <input class="slider" id="slider2" type="range" min="0" max="100" value="0" aria-label="LED 2 parlaklık">
+  <div class="row"><small>0%</small><small>100%</small></div>
+  <div class="controls"><button class="on" data-action="ON" data-ch="2">AÇ</button><button class="off" data-action="OFF" data-ch="2">KAPAT</button></div>
+  <div class="presets"><button class="secondary" data-set="2" data-value="50">%50</button><button class="secondary" data-set="2" data-value="100">%100</button></div>
+ </article>
+</section>
+<section class="panel">
+ <div class="row"><b>Bağlantı / Arduino geri bildirimi</b><button id="statusBtn" class="secondary" disabled>DURUMU SORGULA</button></div>
+ <p class="hint">Son gelen Bluetooth mesajları:</p><div id="log">Henüz veri alınmadı.</div>
+</section>
+<footer>SMART HOME CONTROL · HC-05 · L298N PWM · 2 KANAL</footer>
+</main>
+</div>
 <script>
 "use strict";
-
-/* SABİT CLOUDFLARE ADRESİ */
-const API="https://smart-home-control.cesurtavuk1905.workers.dev";
-
-let token="";
-let data={
- led1:{on:false,brightness:100},
- led2:{on:false,brightness:100}
-};
-let polling=false;
-let refreshTimer=null;
-
 const $=id=>document.getElementById(id);
-
-function showMessage(text){
- $("message").textContent=text;
-}
-
-/* GÜVENLİ CEVAP OKUMA */
-async function readResponse(response){
- const raw=await response.text();
-
- if(!raw || !raw.trim()){
-  throw new Error("Sunucu boş cevap gönderdi. HTTP "+response.status);
- }
-
- let result;
- try{
-  result=JSON.parse(raw);
- }catch{
-  throw new Error(
-   "Sunucu JSON göndermedi. HTTP "+response.status+
-   ". Cevap: "+raw.slice(0,120)
-  );
- }
-
- if(!response.ok){
-  throw new Error(result.error||"HTTP "+response.status+" hatası.");
- }
-
- if(!result || typeof result!=="object"){
-  throw new Error("Sunucu cevabı geçersiz.");
- }
-
- return result;
-}
-
-/* API */
-async function request(path,body){
- if(!token)throw new Error("Önce giriş yapmalısın.");
-
- let response;
- try{
-  response=await fetch(API+path,{
-   method:body?"POST":"GET",
-   headers:{
-    "Authorization":"Bearer "+token,
-    ...(body?{"Content-Type":"application/json"}:{})
-   },
-   body:body?JSON.stringify(body):undefined,
-   cache:"no-store"
-  });
- }catch(error){
-  throw new Error("Sunucuya bağlanılamadı. İnternet bağlantını kontrol et.");
- }
-
- const result=await readResponse(response);
-
- if(result.ok!==true){
-  throw new Error(result.error||"Sunucu isteği kabul etmedi.");
- }
-
- return result;
-}
-
-/* LOGIN */
+// Şifre HTML içine yazılmaz; mevcut Cloudflare Worker CONTROL_TOKEN ile doğrulanır.
+let authToken="";
+function showApp(){$("loginScreen").hidden=true;$("appShell").hidden=false}
+function showLogin(){authToken="";$("appShell").hidden=true;$("loginScreen").hidden=false}
 $("loginForm").addEventListener("submit",async e=>{
- e.preventDefault();
-
- const password=$("password").value.trim();
- if(!password)return;
-
- $("loginError").textContent="Sunucu kontrol ediliyor...";
-
+ e.preventDefault();const btn=$("loginSubmit"),err=$("loginError");err.textContent="";btn.disabled=true;btn.textContent="KONTROL EDİLİYOR…";
  try{
-  const response=await fetch(API+"/api/state",{
-   headers:{"Authorization":"Bearer "+password},
-   cache:"no-store"
-  });
-
-  const result=await readResponse(response);
-
-  if(result.ok!==true || !result.target){
-   throw new Error(result.error||"Sunucu durumu alınamadı.");
-  }
-
-  token=password;
-  data=result.target;
-
-  $("password").value="";
-  $("loginError").textContent="";
-  $("loginScreen").classList.add("hidden");
-  $("appScreen").classList.remove("hidden");
-
-  render();
-  showMessage("Giriş başarılı.");
-  refresh();
-
-  if(refreshTimer)clearInterval(refreshTimer);
-  refreshTimer=setInterval(refresh,3000);
-
- }catch(error){
-  token="";
-  $("loginError").textContent=error.message;
- }
+  const username=$("loginUser").value.trim();
+  const password=$("loginPass").value;
+  if(username!=="Smart Home")throw new Error("Kullanıcı adı hatalı.");
+  const response=await fetch("/api/state",{method:"GET",headers:{"Authorization":"Bearer "+password},cache:"no-store"});
+  const data=await response.json().catch(()=>({}));
+  if(!response.ok||data.ok!==true||!data.target)throw new Error(data.error||"Giriş bilgileri doğrulanamadı.");
+  authToken=password;$("loginPass").value="";showApp();
+ }catch(error){err.textContent=error.message.includes("Failed to fetch")?"Sunucuya ulaşılamadı. İnternet bağlantısını ve Cloudflare Worker adresini kontrol et.":error.message}
+ finally{btn.disabled=false;btn.textContent="GİRİŞ YAP"}
 });
-
-function logout(){
- token="";
- if(refreshTimer)clearInterval(refreshTimer);
- refreshTimer=null;
- $("appScreen").classList.add("hidden");
- $("loginScreen").classList.remove("hidden");
- $("password").value="";
- $("loginError").textContent="";
- $("connection").className="status";
- $("connection").querySelector("span").textContent="Bağlantı bekleniyor";
+$("logout").addEventListener("click",()=>{if(connected&&window.AndroidBluetooth?.disconnect)window.AndroidBluetooth.disconnect();showLogin()});
+let connected=false;
+let brightness={1:0,2:0};
+function log(s){$("log").textContent=(s+"\n"+$("log").textContent).slice(0,1800)}
+function setConnected(ok,name="HC-05"){
+ connected=ok;
+ $("status").textContent=ok?"Bağlandı: "+name:"Bluetooth bağlantısı yok";
+ $("status").className=ok?"status ok":"status";
+ $("connect").disabled=ok;$("disconnect").disabled=!ok;$("statusBtn").disabled=!ok;
+ document.querySelectorAll("[data-action],[data-set]").forEach(b=>b.disabled=!ok);
+ $("fade").disabled=!ok;
 }
-
-/* LED ARAYÜZÜ */
-function render(){
- $("ledCards").innerHTML=[1,2].map(n=>{
-  const led=data["led"+n];
-  const value=Number(led.brightness)||0;
-  const dash=377*value/100;
-
-  return `
-  <article class="card">
-   <div class="card-head">
-    <h2>💡 LED ${n}</h2>
-    <span class="state ${led.on?"on":""}">
-     ${led.on?"AÇIK":"KAPALI"}
-    </span>
-   </div>
-
-   <div class="gauge">
-    <svg viewBox="0 0 300 175">
-     <path d="M30 150 A120 120 0 0 1 270 150"
-      fill="none" stroke="#35445a" stroke-width="16" stroke-linecap="round"/>
-     <path d="M30 150 A120 120 0 0 1 270 150"
-      fill="none" stroke="#f4bd35" stroke-width="16"
-      stroke-linecap="round" stroke-dasharray="${dash} 377"/>
-    </svg>
-    <div class="gauge-value">${value}%<br><small>PARLAKLIK</small></div>
-   </div>
-
-   <div class="slider-wrap">
-    <input type="range" min="0" max="100" value="${value}"
-     aria-label="LED ${n} parlaklığı"
-     oninput="preview(${n},this.value)"
-     onchange="setBrightness(${n},this.value)">
-    <div class="range-labels"><span>0%</span><span>100%</span></div>
-   </div>
-
-   <div class="buttons">
-    <button class="action on-btn" onclick="command(${n},'on')">AÇ</button>
-    <button class="action off-btn" onclick="command(${n},'off')">KAPAT</button>
-    <button class="action preset ${value===50?"active":""}" onclick="setBrightness(${n},50)">%50</button>
-    <button class="action preset ${value===100?"active":""}" onclick="setBrightness(${n},100)">%100</button>
-   </div>
-  </article>`;
- }).join("");
+function send(line){
+ if(!connected||!window.AndroidBluetooth||typeof window.AndroidBluetooth.send!=="function"){
+  log("Gönderilemedi: Android Bluetooth köprüsü bağlı değil.");return;
+ }
+ window.AndroidBluetooth.send(line+"\n");log(">> "+line);
 }
-
-/* KAYDIRICI ÖN İZLEMESİ */
-function preview(n,value){
- const card=document.querySelectorAll(".card")[n-1];
- if(!card)return;
-
- const v=Number(value);
- card.querySelector(".gauge-value").innerHTML=
-  `${v}%<br><small>PARLAKLIK</small>`;
-
- card.querySelector(".gauge path:last-child").setAttribute(
-  "stroke-dasharray",`${377*v/100} 377`
- );
+function updateChannel(ch,pct){
+ pct=Math.max(0,Math.min(100,Math.round(Number(pct)||0)));
+ brightness[ch]=pct;$("value"+ch).textContent=pct;$("slider"+ch).value=pct;
+ $("state"+ch).textContent=pct>0?"AÇIK":"KAPALI";
 }
-
-/* KOMUT GÖNDER */
-async function command(n,action){
- try{
-  await request("/api/command",{led:n,action});
-  await refresh();
-  showMessage(`LED ${n}: ${action==="on"?"AÇILDI":"KAPATILDI"}`);
- }catch(error){
-  showMessage(error.message);
- }
-}
-
-async function setBrightness(n,value){
- value=Math.max(0,Math.min(100,Math.round(Number(value))));
-
- try{
-  await request("/api/command",{
-   led:n,
-   action:"brightness",
-   brightness:value
-  });
-
-  await refresh();
-  showMessage(`LED ${n} parlaklığı %${value} yapıldı.`);
- }catch(error){
-  showMessage(error.message);
-  refresh();
- }
-}
-
-/* DURUMU OKU */
-async function refresh(){
- if(!token||polling)return;
- polling=true;
-
- try{
-  const result=await request("/api/state");
-
-  if(!result.target||!result.target.led1||!result.target.led2){
-   throw new Error("LED durum verileri eksik.");
-  }
-
-  data=result.target;
-  render();
-
-  $("connection").className="status online";
-  $("connection").querySelector("span").textContent=
-   result.bridgeOnline?"Arduino bağlantısı aktif":"Sunucu bağlı · Arduino bekleniyor";
-
- }catch(error){
-  $("connection").className="status";
-  $("connection").querySelector("span").textContent="Bağlantı hatası";
-  showMessage(error.message);
- }finally{
-  polling=false;
- }
-}
-
-/* SESLİ KOMUT */
-function parseVoice(text){
- const t=text.toLocaleLowerCase("tr-TR");
- const match=t.match(/led\s*(1|bir|2|iki)/);
-
- if(!match)return "LED 1 veya LED 2 belirtmelisin.";
-
- const n=["1","bir"].includes(match[1])?1:2;
-
- if(/kapat|söndür/.test(t)){
-  command(n,"off");
-  return `LED ${n} kapatılıyor.`;
- }
-
- const percent=t.match(/yüzde\s*(\d{1,3})|(\d{1,3})\s*%/);
-
- if(percent){
-  const value=Math.min(100,Number(percent[1]||percent[2]));
-  setBrightness(n,value);
-  return `LED ${n} parlaklığı %${value} yapılıyor.`;
- }
-
- if(/yarım|elli|50/.test(t)){
-  setBrightness(n,50);
-  return `LED ${n} %50 yapılıyor.`;
- }
-
- if(/tam|sonuna kadar|yüzde yüz|100/.test(t)){
-  setBrightness(n,100);
-  return `LED ${n} %100 yapılıyor.`;
- }
-
- if(/\baç\b|yak/.test(t)){
-  command(n,"on");
-  return `LED ${n} açılıyor.`;
- }
-
- return "Örnek: LED 1 parlaklığını yüzde 40 yap.";
-}
-
-/* MİKROFON */
-const SpeechRecognition=
- window.SpeechRecognition||window.webkitSpeechRecognition;
-
-$("micButton").addEventListener("click",()=>{
- if(!SpeechRecognition){
-  showMessage("Tarayıcı ses tanımayı desteklemiyor. Android Chrome kullan.");
+function sendSet(ch,pct){send("SET "+ch+" "+pct+" "+$("fade").value)}
+$("connect").addEventListener("click",()=>{
+ if(!window.AndroidBluetooth||typeof window.AndroidBluetooth.connect!=="function"){
+  log("Bu sayfa Android WebView Bluetooth köprüsü olmadan HC-05'e bağlanamaz. Android uygulamasını açıp paneli oradan kullan.");
   return;
  }
-
- const recognition=new SpeechRecognition();
- recognition.lang="tr-TR";
- recognition.interimResults=false;
- recognition.maxAlternatives=1;
-
- recognition.onstart=()=>{
-  $("micButton").classList.add("listening");
-  $("voiceText").textContent="Dinliyorum...";
- };
-
- recognition.onend=()=>{
-  $("micButton").classList.remove("listening");
-  $("voiceText").innerHTML=
-   'Mikrofon düğmesine bas ve komutunu söyle.<br>Örnek: LED 1 parlaklığını yüzde 35 yap.';
- };
-
- recognition.onresult=e=>{
-  const spoken=e.results[0][0].transcript;
-  $("voiceText").textContent="Duyulan: "+spoken;
-  showMessage(parseVoice(spoken));
- };
-
- recognition.onerror=e=>{
-  showMessage("Mikrofon hatası: "+e.error);
- };
-
- recognition.start();
+ try{window.AndroidBluetooth.connect()}catch(e){log("Bağlantı hatası: "+e.message)}
 });
+$("disconnect").addEventListener("click",()=>{if(window.AndroidBluetooth&&window.AndroidBluetooth.disconnect)window.AndroidBluetooth.disconnect()});
+$("fade").addEventListener("change",()=>send("FADE "+$("fade").value));
+$("statusBtn").addEventListener("click",()=>send("STATUS"));
+document.querySelectorAll("[data-action]").forEach(b=>b.addEventListener("click",()=>{
+ const ch=b.dataset.ch;send(b.dataset.action+" "+ch);
+}));
+document.querySelectorAll("[data-set]").forEach(b=>b.addEventListener("click",()=>{
+ const ch=b.dataset.set,pct=Number(b.dataset.value);updateChannel(ch,pct);sendSet(ch,pct);
+}));
+[1,2].forEach(ch=>{
+ $("slider"+ch).addEventListener("change",e=>{const pct=Number(e.target.value);updateChannel(ch,pct);sendSet(ch,pct)});
+ $("slider"+ch).addEventListener("input",e=>$("value"+ch).textContent=e.target.value);
+});
+window.onBluetoothConnected=function(name){setConnected(true,name||"HC-05");send("STATUS")};
+window.onBluetoothDisconnected=function(){setConnected(false);log("Bluetooth bağlantısı kesildi.")};
+window.onBluetoothData=function(line){
+ line=String(line).trim();if(!line)return;log("<< "+line);
+ if(line==="SMART_HOME_READY"){return}
+ const m=line.match(/^STATE\s+([12])\s+(\d{1,3})$/i);
+ if(m)updateChannel(Number(m[1]),Number(m[2]));
+};
+setConnected(false);
 </script>
 </body>
-  </html>
+</html>
