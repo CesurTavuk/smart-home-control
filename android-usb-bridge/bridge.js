@@ -13,9 +13,36 @@ const HOST = "127.0.0.1";
 const WEB_PORT = Number(process.env.WEB_PORT || 8765);
 const SERIAL_HOST = "127.0.0.1";
 const SERIAL_PORT = Number(process.env.SERIAL_PORT || 7000);
+const CONTROL_API_ORIGIN = new URL(process.env.CONTROL_API_ORIGIN || "https://smart-home-control.cesurtavuk1905.workers.dev").origin;
 const INDEX_FILE = path.resolve(__dirname, "..", "index.html");
 
-const server = http.createServer((req, res) => {
+const server = http.createServer(async (req, res) => {
+  if (req.url === "/api/state") {
+    if (req.method !== "GET") {
+      res.writeHead(405, { "Content-Type": "application/json; charset=utf-8", Allow: "GET" });
+      return res.end(JSON.stringify({ ok: false, error: "Method not allowed" }));
+    }
+    const authorization = req.headers.authorization || "";
+    if (!/^Bearer [^\r\n]+$/.test(authorization)) {
+      res.writeHead(401, { "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store" });
+      return res.end(JSON.stringify({ ok: false, error: "Giriş bilgileri gerekli" }));
+    }
+    try {
+      const upstream = await fetch(`${CONTROL_API_ORIGIN}/api/state`, {
+        method: "GET", headers: { Authorization: authorization, Accept: "application/json" }, redirect: "error"
+      });
+      const body = await upstream.arrayBuffer();
+      res.writeHead(upstream.status, {
+        "Content-Type": upstream.headers.get("content-type") || "application/json; charset=utf-8",
+        "Cache-Control": "no-store"
+      });
+      return res.end(Buffer.from(body));
+    } catch (err) {
+      console.error(`Control API request failed: ${err.message}`);
+      res.writeHead(502, { "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store" });
+      return res.end(JSON.stringify({ ok: false, error: "Cloudflare doğrulama sunucusuna ulaşılamadı" }));
+    }
+  }
   if (req.method !== "GET" || (req.url !== "/" && req.url !== "/index.html")) {
     res.writeHead(404, { "Content-Type": "text/plain; charset=utf-8" });
     return res.end("Not found");
