@@ -10,7 +10,7 @@
 ## Computer: Chrome with direct USB
 
 1. Upload `smart-home-control.ino` to the Nano.
-2. Open `index.html` from a secure HTTPS origin (for example, the repository's GitHub Pages URL) in desktop Chrome or Edge.
+2. Open `index.html` in desktop Chrome or Edge. If the browser does not offer a USB port picker, serve the file from a secure HTTPS page or from localhost.
 3. Close Arduino IDE Serial Monitor or any other terminal using the Nano port.
 4. Press **USBâ€™YÄ° SEÃ‡ VE BAÄLAN**, select the Nano, and allow access.
 
