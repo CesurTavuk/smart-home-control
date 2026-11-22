@@ -1,12 +1,12 @@
-# SMART HOME CONTROL â€” Nano wiring
+# SMART HOME CONTROL — Nano wiring
 
 This diagram uses two logic-level N-channel MOSFETs as low-side switches for two DC LED loads. The Nano pins only drive the MOSFET gates; LED current comes from a separate supply sized for the LEDs.
 
 ```text
                          +------------------ Arduino Nano ------------------+
                          |                                                   |
-USB OTG from tablet/PC ->| USB                                          D5  |---[100 Î©]--- Gate Q1
-                         |                                              D6  |---[100 Î©]--- Gate Q2
+USB OTG from tablet/PC ->| USB                                          D5  |---[100 Ω]--- Gate Q1
+                         |                                              D6  |---[100 Ω]--- Gate Q2
                          |                                              GND |------. 
                          +--------------------------------------------------+      |
                                                                                  |
@@ -22,7 +22,7 @@ External regulated supply (choose voltage to match LED loads)                   
                            |                      |                              |
    Supply 0V --------------+----------------------+------------------------------'
                            |                      |
-                        [10 kÎ©]                [10 kÎ©]
+                        [10 kΩ]                [10 kΩ]
                            |                      |
                          GND                    GND
 ```
@@ -31,9 +31,9 @@ External regulated supply (choose voltage to match LED loads)                   
 
 | Connection | Where it goes |
 |---|---|
-| LED channel 1 PWM | Nano D5 â†’ 100 Î© resistor â†’ Q1 gate |
-| LED channel 2 PWM | Nano D6 â†’ 100 Î© resistor â†’ Q2 gate |
-| Gate pull-downs | 10 kÎ© from each MOSFET gate to GND |
+| LED channel 1 PWM | Nano D5 → 100 Ω resistor → Q1 gate |
+| LED channel 2 PWM | Nano D6 → 100 Ω resistor → Q2 gate |
+| Gate pull-downs | 10 kΩ from each MOSFET gate to GND |
 | MOSFET sources | Common GND |
 | MOSFET drains | LED channel negative terminals |
 | LED positive terminals | External supply +V, through any required current limiting |
