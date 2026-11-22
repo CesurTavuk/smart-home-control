@@ -1,6 +1,6 @@
 /*
   SMART HOME CONTROL - Arduino Nano
-  Two PWM LED channels, USB serial at 115200 baud.
+  Two L298N PWM channels, USB serial at 115200 baud.
 
   Commands (newline terminated):
     SET <channel 1|2> <percent 0..100> <fade milliseconds>
@@ -16,7 +16,9 @@
     ERR <message>
 */
 
-const byte LED_PIN[2] = {5, 6}; // Nano PWM pins D5, D6
+const byte PWM_PIN[2] = {5, 6};          // Nano D5 -> ENA, D6 -> ENB
+const byte DIR_IN1[2] = {7, 9};          // D7 -> IN1, D9 -> IN3
+const byte DIR_IN2[2] = {8, 10};         // D8 -> IN2, D10 -> IN4
 const byte CHANNELS = 2;
 const unsigned long MAX_FADE_MS = 10000UL;
 
@@ -56,7 +58,7 @@ void setTarget(byte index, int percent, unsigned long duration) {
   c.fadeDuration = duration;
   if (duration == 0 || c.startPwm == c.targetPwm) {
     c.currentPwm = c.targetPwm;
-    analogWrite(LED_PIN[index], c.currentPwm);
+    analogWrite(PWM_PIN[index], c.currentPwm);
     reportState(index);
   }
 }
@@ -141,7 +143,7 @@ void updateOutputs() {
     }
     if (nextPwm != ch.currentPwm) {
       ch.currentPwm = nextPwm;
-      analogWrite(LED_PIN[i], ch.currentPwm);
+      analogWrite(PWM_PIN[i], ch.currentPwm);
       reportState(i);
     }
   }
@@ -149,8 +151,13 @@ void updateOutputs() {
 
 void setup() {
   for (byte i = 0; i < CHANNELS; ++i) {
-    pinMode(LED_PIN[i], OUTPUT);
-    analogWrite(LED_PIN[i], 0);
+    pinMode(PWM_PIN[i], OUTPUT);
+    pinMode(DIR_IN1[i], OUTPUT);
+    pinMode(DIR_IN2[i], OUTPUT);
+    // OUT1/OUT3 are the positive side of each LED output pair.
+    digitalWrite(DIR_IN1[i], HIGH);
+    digitalWrite(DIR_IN2[i], LOW);
+    analogWrite(PWM_PIN[i], 0);
     channel[i] = {0, 0, 0, 0, 0};
   }
   Serial.begin(115200);
