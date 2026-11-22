@@ -1,45 +1,51 @@
-# SMART HOME CONTROL — Nano wiring
+# SMART HOME CONTROL — 12 V şerit LED bağlantısı
 
-This diagram uses two logic-level N-channel MOSFETs as low-side switches for two DC LED loads. The Nano pins only drive the MOSFET gates; LED current comes from a separate supply sized for the LEDs.
+Bu şema Arduino Nano, L298N çift kanallı motor sürücüsü ve 12 V şerit LED’ler içindir. Şerit LED’leri motor sürücüsünün çıkış çiftlerine bağlayın. Harici direnç gerekmez; kullandığınız şerit LED 12 V olmalı ve kendi akım sınırlama elemanlarını içermelidir.
 
 ```text
-                         +------------------ Arduino Nano ------------------+
-                         |                                                   |
-USB OTG from tablet/PC ->| USB                                          D5  |---[100 Ω]--- Gate Q1
-                         |                                              D6  |---[100 Ω]--- Gate Q2
-                         |                                              GND |------. 
-                         +--------------------------------------------------+      |
-                                                                                 |
-External regulated supply (choose voltage to match LED loads)                    |
-   +V  --------------------+----------------------+                              |
-                           |                      |                              |
-                      LED 1 +               LED 2 +                             |
-                      LED 1 -               LED 2 -                             |
-                           |                      |                              |
-                           D                      D                              |
-                      Q1 N-MOSFET            Q2 N-MOSFET                         |
-                           S                      S                              |
-                           |                      |                              |
-   Supply 0V --------------+----------------------+------------------------------'
-                           |                      |
-                        [10 kΩ]                [10 kΩ]
-                           |                      |
-                         GND                    GND
+              12 V GÜÇ KAYNAĞI
+              +12 V ───────────────────────── L298N  +12V / Vs
+
+  Arduino Nano                         L298N MOTOR SÜRÜCÜSÜ
+  ────────────                         ────────────────────
+  D5  ──────────────────────────────── ENA   (jumper'ı çıkar)
+  D6  ──────────────────────────────── ENB   (jumper'ı çıkar)
+  D7  ──────────────────────────────── IN1
+  D8  ──────────────────────────────── IN2
+  D9  ──────────────────────────────── IN3
+  D10 ──────────────────────────────── IN4
+  GND ──────────────────────────────── GND ─────── 12 V güç kaynağı −
+
+  L298N OUT1 ────────────────────────── Şerit LED 1 (+)
+  L298N OUT2 ────────────────────────── Şerit LED 1 (−)
+
+  L298N OUT3 ────────────────────────── Şerit LED 2 (+)
+  L298N OUT4 ────────────────────────── Şerit LED 2 (−)
 ```
 
-## Parts and pin mapping
+## Bağlantı tablosu
 
-| Connection | Where it goes |
-|---|---|
-| LED channel 1 PWM | Nano D5 → 100 Ω resistor → Q1 gate |
-| LED channel 2 PWM | Nano D6 → 100 Ω resistor → Q2 gate |
-| Gate pull-downs | 10 kΩ from each MOSFET gate to GND |
-| MOSFET sources | Common GND |
-| MOSFET drains | LED channel negative terminals |
-| LED positive terminals | External supply +V, through any required current limiting |
-| Ground reference | External supply 0V and Nano GND connected together |
+| Arduino Nano | L298N | Görevi |
+|---|---|---|
+| D5 | ENA | LED 1 parlaklık PWM |
+| D6 | ENB | LED 2 parlaklık PWM |
+| D7 | IN1 | LED 1 yön girişi 1 |
+| D8 | IN2 | LED 1 yön girişi 2 |
+| D9 | IN3 | LED 2 yön girişi 1 |
+| D10 | IN4 | LED 2 yön girişi 2 |
+| GND | GND | Ortak toprak |
+| — | OUT1, OUT2 | Şerit LED 1’in + ve − uçları |
+| — | OUT3, OUT4 | Şerit LED 2’nin + ve − uçları |
+| 12 V kaynak + | +12V / Vs | Sürücü ve şeritlerin beslemesi |
+| 12 V kaynak − | GND | Ortak toprak |
 
-Choose logic-level MOSFETs that are specified for low on-resistance at a 4.5 V gate drive (for example, AO3400A for modest currents; choose a suitably rated package for higher current). For bare LEDs, include a correctly sized series resistor or constant-current driver. LED strips normally have built-in resistors, but check the strip voltage and current rating. Do not power LED strips from Nano D5/D6 or the Nano 5 V pin. If a separate supply is used, connect grounds as shown. USB can power the Nano while the external supply powers the LED loads.
+## Kurulum
 
-The code uses D5 and D6 PWM outputs, `115200` baud, 8-N-1. Connect the Nano through USB OTG to Android or directly through USB to a computer. On a computer, close any serial monitor that has the Nano's port open before connecting the web panel.
+1. L298N üzerindeki **ENA** ve **ENB** jumper’larını çıkarın; bu girişlere Nano D5 ve D6 bağlanacak. Kartta bulunan **5V-EN** jumper’ı farklı bir işlev görür; 12 V kullanırken kartınızın üzerindeki işaretlere/kılavuza göre bırakın.
+2. LED 1 şeridinin + ucunu OUT1’e, − ucunu OUT2’ye bağlayın. LED 2 şeridini aynı şekilde OUT3 (+) ve OUT4 (−) uçlarına bağlayın.
+3. 12 V güç kaynağını L298N’in +12V/Vs ve GND girişlerine bağlayın.
+4. Nano GND, L298N GND ve güç kaynağının eksi ucunu ortaklayın. Nano’yu USB’den besleyin; Nano’nun 5 V pinini 12 V girişine bağlamayın.
+5. L298N üzerindeki OUT çıkışlarında PWM sırasında yaklaşık 12 V’tan daha düşük gerilim görülebilir ve sürücü ısınabilir. Şerit akımı kullandığınız L298N kartının sürekli akım sınırını aşmamalı; havalandırma/soğutucu gereksinimini gözetin.
+
+Bu bağlantı 12 V şerit LED’ler içindir. Tek başına çıplak LED’i dirençsiz bağlamayın. Bağlantıdan önce güç kaynağını kapatın.
 
