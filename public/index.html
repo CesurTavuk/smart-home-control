@@ -163,7 +163,7 @@ function musicLevels(now){
  // Seri hatta gereksiz trafik oluşturma; en fazla 20 güncelleme/sn.
  if(now-lastMusicSend>=50&&(Math.abs(a-lastMusicLevels[0])>=3||Math.abs(b-lastMusicLevels[1])>=3||now-lastMusicSend>180)){
    lastMusicLevels=[a,b];
-   send("SET 1 "+a+" 0\\nSET 2 "+b+" 0");
+   send("SET 1 "+a+" 0\nSET 2 "+b+" 0");
    lastMusicSend=now;
  }
  if(now-lastMicUi>400){
