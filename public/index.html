@@ -46,12 +46,16 @@ button,select{border:0;border-radius:12px;padding:12px 15px;font-weight:750;font
 <section class="panel music-panel">
  <div class="row"><div><b>🎵 Müzik modu</b><div class="hint">Mikrofon sesini analiz eder; tek renk LED'leri ritme göre sürer.</div></div><span id="musicState" class="badge">KAPALI</span></div>
  <div class="music-controls">
+  <label for="cameraSource">Kamera kaynağı (OBS Virtual Camera)</label>
+  <select id="cameraSource" disabled><option value="">Önce izin ver</option></select>
+  <label for="audioSource">Ses kaynağı (OBS masaüstü sesi)</label>
+  <select id="audioSource" disabled><option value="">Önce izin ver</option></select>
   <label for="musicMode">Efekt</label>
   <select id="musicMode"><option value="rhythm">Ritim</option><option value="breathe">Nefes</option><option value="strobe">Strobe</option><option value="wave">Dalga</option><option value="mixed">Karışık</option></select>
   <label for="sensitivity">Ritim hassasiyeti <span id="sensitivityValue">6</span>/10</label>
   <input id="sensitivity" class="slider" type="range" min="1" max="10" value="6">
   <div class="row"><button id="musicStart" class="connect" type="button" disabled>MİKROFONU AÇ</button><button id="musicStop" class="secondary" type="button" disabled>DURDUR</button></div>
-  <p id="musicNote" class="hint">Müzik modu için mikrofon izni ve güvenli bağlantı (HTTPS veya localhost) gerekir.</p>
+  <p id="musicNote" class="hint">Mikrofonu Aç düğmesi kamera ve ses izni ister. OBS kamerası seçilir; görüntü ekranda gösterilmez. Ses kaynağından masaüstü sesi analiz edilir.</p>
  </div>
 </section>
 <section class="panel"><div class="row"><b>Seri geri bildirimi</b><button id="statusBtn" class="secondary" disabled>DURUMU SORGULA</button></div><p class="hint">UNO’dan gelen durum mesajları:</p><div id="log">Henüz veri alınmadı.</div></section>
@@ -62,7 +66,7 @@ button,select{border:0;border-radius:12px;padding:12px 15px;font-weight:750;font
 "use strict";
 const $=id=>document.getElementById(id);
 let port=null,reader=null,writer=null,readTask=null,connected=false,mode="serial",fadeMs=1500,authToken="";
-let audioContext=null,analyser=null,micStream=null,musicFrame=0,musicRunning=false,lastMusicSend=0,lastBeat=0,energyHistory=[],lastMusicLevels=[-1,-1],mixedStep=0,micNoiseFloor=-58,micEnvelope=0,beatUntil=0,lastMicUi=0;
+let audioContext=null,analyser=null,micStream=null,cameraStream=null,mediaPermissionReady=false,musicFrame=0,musicRunning=false,lastMusicSend=0,lastBeat=0,energyHistory=[],lastMusicLevels=[-1,-1],mixedStep=0,micNoiseFloor=-58,micEnvelope=0,beatUntil=0,lastMicUi=0;
 const decoder=new TextDecoder(),encoder=new TextEncoder();let pendingText="";
 const uiRampFrames=[0,0],ignoreStateUntil=[0,0],commandRevision=[0,0],shownPercent=[0,0];
 function showApp(){$("loginScreen").hidden=true;$("appShell").hidden=false}
@@ -171,25 +175,74 @@ function musicLevels(now){
    lastMicUi=now;
  }
 }
+function fillMediaDeviceSelect(id,devices,placeholder){
+ const select=$(id);select.innerHTML="";
+ const first=document.createElement("option");first.value="";first.textContent=placeholder;select.appendChild(first);
+ devices.forEach((device,index)=>{const option=document.createElement("option");option.value=device.deviceId;option.textContent=device.label||("Aygıt "+(index+1));select.appendChild(option)});
+ select.disabled=devices.length===0;
+}
+async function requestMediaPermission(){
+ if(!navigator.mediaDevices?.getUserMedia||!window.isSecureContext){$("musicNote").textContent="Kamera ve ses izni için HTTPS veya localhost gerekir.";return false}
+ let permissionStream=null;
+ try{
+  permissionStream=await navigator.mediaDevices.getUserMedia({video:true,audio:{echoCancellation:false,noiseSuppression:false,autoGainControl:false}});
+  permissionStream.getTracks().forEach(track=>track.stop());
+  const devices=await navigator.mediaDevices.enumerateDevices();
+  const cameras=devices.filter(device=>device.kind==="videoinput");
+  const audioInputs=devices.filter(device=>device.kind==="audioinput");
+  fillMediaDeviceSelect("cameraSource",cameras,"Kamera seç");
+  fillMediaDeviceSelect("audioSource",audioInputs,"Ses aygıtı seç");
+  const obsCamera=cameras.find(device=>/obs.*virtual|virtual.*camera/i.test(device.label));
+  const obsAudio=audioInputs.find(device=>/obs|cable|virtual/i.test(device.label));
+  if(obsCamera)$("cameraSource").value=obsCamera.deviceId;
+  else if(cameras[0])$("cameraSource").value=cameras[0].deviceId;
+  if(obsAudio)$("audioSource").value=obsAudio.deviceId;
+  else if(audioInputs[0])$("audioSource").value=audioInputs[0].deviceId;
+  mediaPermissionReady=true;
+  $("musicStart").textContent="SEÇİLEN KAYNAKLARI AÇ";
+  $("musicNote").textContent="Kaynakları seç: OBS Virtual Camera görüntüsü gösterilmeyecek. Ses kaynağında OBS masaüstü sesinin yönlendirildiği aygıtı seç.";
+  return true;
+ }catch(e){
+  if(permissionStream)permissionStream.getTracks().forEach(track=>track.stop());
+  $("musicNote").textContent="Kamera/ses izni alınamadı: "+e.message;
+  return false;
+ }
+}
 async function startMusic(){
  if(!connected){log("Önce Arduino bağlantısını kur.");return}
- if(!navigator.mediaDevices?.getUserMedia||!window.isSecureContext){$("musicNote").textContent="Mikrofon için HTTPS veya localhost üzerinden açılan sayfa gerekir.";return}
+ if(!mediaPermissionReady){await requestMediaPermission();return}
+ const cameraId=$("cameraSource").value,audioId=$("audioSource").value;
+ if(!cameraId||!audioId){$("musicNote").textContent="Devam etmek için kamera ve ses kaynağını seç.";return}
  try{
-  micStream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:false,noiseSuppression:false,autoGainControl:false}});
+  // Kamera akışı yalnızca cihazı/izni doğrulamak için alınır; hiçbir video öğesine bağlanmaz.
+  micStream=await navigator.mediaDevices.getUserMedia({
+   video:{deviceId:{exact:cameraId}},
+   audio:{deviceId:{exact:audioId},echoCancellation:false,noiseSuppression:false,autoGainControl:false}
+  });
+  cameraStream=micStream;
+  if(!micStream.getAudioTracks().length)throw new Error("Seçilen akışta ses kanalı yok. OBS masaüstü sesini sanal ses girişine yönlendirip Ses kaynağından onu seç.");
   audioContext=new (window.AudioContext||window.webkitAudioContext)();await audioContext.resume();
   analyser=audioContext.createAnalyser();analyser.fftSize=2048;analyser.smoothingTimeConstant=.18;
-  audioContext.createMediaStreamSource(micStream).connect(analyser);
+  audioContext.createMediaStreamSource(new MediaStream(micStream.getAudioTracks())).connect(analyser);
   energyHistory=[];micNoiseFloor=-58;micEnvelope=0;lastBeat=0;beatUntil=0;lastMusicSend=0;lastMusicLevels=[-1,-1];
   musicRunning=true;saveMusicSettings(true);$("musicState").textContent="DİNLİYOR";$("musicState").style.color="var(--green)";
-  $("musicStart").disabled=true;$("musicStop").disabled=false;$("musicNote").textContent="Mikrofon aktif. Müzik modunu durdurduğunda LED'ler söner.";
+  $("musicStart").disabled=true;$("musicStop").disabled=false;
+  $("cameraSource").disabled=true;$("audioSource").disabled=true;
+  $("musicNote").textContent="Seçilen OBS kaynakları aktif. Kamera görüntüsü gösterilmiyor; ses analiz ediliyor.";
   const tick=now=>{if(!musicRunning)return;musicLevels(now);musicFrame=requestAnimationFrame(tick)};musicFrame=requestAnimationFrame(tick);
- }catch(e){$("musicNote").textContent="Mikrofon açılamadı: "+e.message}
+ }catch(e){
+  if(micStream)micStream.getTracks().forEach(track=>track.stop());micStream=null;cameraStream=null;
+  $("musicNote").textContent="Kaynaklar açılamadı: "+e.message;
+ }
 }
 async function stopMusic(){
- musicRunning=false;saveMusicSettings(false);if(musicFrame)cancelAnimationFrame(musicFrame);if(micStream)micStream.getTracks().forEach(t=>t.stop());micStream=null;
+ musicRunning=false;saveMusicSettings(false);if(musicFrame)cancelAnimationFrame(musicFrame);
+ if(micStream)micStream.getTracks().forEach(track=>track.stop());micStream=null;cameraStream=null;
  if(audioContext){try{await audioContext.close()}catch{}audioContext=null}
  analyser=null;energyHistory=[];micEnvelope=0;lastMusicLevels=[-1,-1];$("musicState").textContent="KAPALI";$("musicState").style.color="";
  $("musicStart").disabled=!connected;$("musicStop").disabled=true;
+ $("cameraSource").disabled=false;$("audioSource").disabled=false;
+ $("musicStart").textContent=mediaPermissionReady?"SEÇİLEN KAYNAKLARI AÇ":"MİKROFONU AÇ";
  if(connected){await send("SET 1 0 0");await send("SET 2 0 0")}
 }
 $("musicStart").addEventListener("click",startMusic);$("musicStop").addEventListener("click",stopMusic);
