@@ -27,7 +27,8 @@ function initialState() {
       led2: { on: false, brightness: 0 }
     },
     version: 0,
-    lastSeen: 0
+    lastSeen: 0,
+    music: { mode: "rhythm", sensitivity: 6, enabled: false }
   };
 }
 
@@ -60,6 +61,10 @@ async function readState(env) {
       actual: {
         ...defaults.actual,
         ...(state.actual || {})
+      },
+      music: {
+        ...defaults.music,
+        ...(state.music || {})
       }
     };
   } catch {
@@ -95,7 +100,7 @@ export default {
       return json({
         ok: true,
         app: "SMART HOME CONTROL",
-        version: "2.1.0",
+        version: "2.2.0",
         status: "online",
         controlTokenConfigured: !!env.CONTROL_TOKEN,
         timestamp: new Date().toISOString()
@@ -139,7 +144,8 @@ export default {
           target: state.target,
           actual: state.actual,
           version: state.version,
-          bridgeOnline: Date.now() - state.lastSeen < 15000
+          bridgeOnline: Date.now() - state.lastSeen < 15000,
+          music: state.music
         });
       }
 
@@ -179,6 +185,28 @@ export default {
           target: state.target,
           version: state.version
         });
+      }
+
+
+      if (path === "/api/music" && request.method === "POST") {
+        const body = await request.json();
+        const modes = ["rhythm", "breathe", "strobe", "wave", "mixed"];
+        const mode = String(body.mode || state.music.mode);
+        const sensitivity = Number(body.sensitivity ?? state.music.sensitivity);
+        if (!modes.includes(mode)) {
+          return json({ ok: false, error: "Geçersiz müzik modu." }, 400);
+        }
+        if (!Number.isInteger(sensitivity) || sensitivity < 1 || sensitivity > 10) {
+          return json({ ok: false, error: "Hassasiyet 1-10 arasında olmalı." }, 400);
+        }
+        state.music = {
+          mode,
+          sensitivity,
+          enabled: body.enabled === true
+        };
+        state.version++;
+        await saveState(env, state);
+        return json({ ok: true, music: state.music, version: state.version });
       }
 
       if (path === "/api/poll" && request.method === "GET") {
