@@ -2,6 +2,8 @@
 """Local USB-serial bridge and static web server for SMART HOME CONTROL on Pardus."""
 import argparse
 import asyncio
+import json
+import os
 import threading
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
@@ -27,6 +29,34 @@ def choose_port(requested):
 
 
 class PanelHandler(SimpleHTTPRequestHandler):
+    def do_GET(self):
+        path = self.path.split("?", 1)[0]
+        if path == "/api/health":
+            self.send_json({"ok": True, "app": "SMART HOME CONTROL", "platform": "Pardus", "status": "online"})
+            return
+        if path == "/api/state":
+            token = os.environ.get("CONTROL_TOKEN", "")
+            if not token or self.headers.get("Authorization") != "Bearer " + token:
+                self.send_json({"ok": False, "error": "Kontrol şifresi hatalı veya eksik."}, 401)
+                return
+            self.send_json({
+                "ok": True,
+                "target": {"led1": {"on": False, "brightness": 100}, "led2": {"on": False, "brightness": 100}},
+                "actual": {"led1": {"on": False, "brightness": 0}, "led2": {"on": False, "brightness": 0}},
+                "music": {"mode": "rhythm", "sensitivity": 6, "enabled": False}
+            })
+            return
+        return super().do_GET()
+
+    def send_json(self, payload, status=200):
+        body = json.dumps(payload).encode("utf-8")
+        self.send_response(status)
+        self.send_header("Content-Type", "application/json; charset=utf-8")
+        self.send_header("Cache-Control", "no-store")
+        self.send_header("Content-Length", str(len(body)))
+        self.end_headers()
+        self.wfile.write(body)
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, directory=str(PUBLIC), **kwargs)
 
