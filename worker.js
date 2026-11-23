@@ -110,7 +110,7 @@ export default {
     }
 
     // Ana sayfa: güncel panel Worker içinde sunulur.
-    if (path === "/" && request.method === "GET") {
+    if ((path === "/" || path === "/index.html") && request.method === "GET") {
       return new Response(PANEL_HTML, {
         headers: { ...cors, "Content-Type": "text/html; charset=utf-8", "Cache-Control": "no-store" }
       });
