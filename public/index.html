@@ -44,14 +44,14 @@ button,select{border:0;border-radius:12px;padding:12px 15px;font-weight:750;font
 </section>
 
 <section class="panel music-panel">
- <div class="row"><div><b>🎵 Müzik modu</b><div class="hint">Cihazda çalan medya sesini yakalar; tek renk LED'leri ritme göre sürer.</div></div><span id="musicState" class="badge">KAPALI</span></div>
+ <div class="row"><div><b>🎵 Müzik modu</b><div class="hint">Mikrofon sesini analiz eder; tek renk LED'leri ritme göre sürer.</div></div><span id="musicState" class="badge">KAPALI</span></div>
  <div class="music-controls">
   <label for="musicMode">Efekt</label>
   <select id="musicMode"><option value="rhythm">Ritim</option><option value="breathe">Nefes</option><option value="strobe">Strobe</option><option value="wave">Dalga</option><option value="mixed">Karışık</option></select>
   <label for="sensitivity">Ritim hassasiyeti <span id="sensitivityValue">6</span>/10</label>
   <input id="sensitivity" class="slider" type="range" min="1" max="10" value="6">
-  <div class="row"><button id="musicStart" class="connect" type="button" disabled>MEDYA SESİNİ YAKALA</button><button id="musicStop" class="secondary" type="button" disabled>DURDUR</button></div>
-  <p id="musicNote" class="hint">Ekran paylaşımında ses yakalamayı seç. Mikrofon kullanılmaz. HTTPS gerekir.</p>
+  <div class="row"><button id="musicStart" class="connect" type="button" disabled>MİKROFONU AÇ</button><button id="musicStop" class="secondary" type="button" disabled>DURDUR</button></div>
+  <p id="musicNote" class="hint">Müzik modu için mikrofon izni ve güvenli bağlantı (HTTPS veya localhost) gerekir.</p>
  </div>
 </section>
 <section class="panel"><div class="row"><b>Seri geri bildirimi</b><button id="statusBtn" class="secondary" disabled>DURUMU SORGULA</button></div><p class="hint">UNO’dan gelen durum mesajları:</p><div id="log">Henüz veri alınmadı.</div></section>
@@ -62,7 +62,7 @@ button,select{border:0;border-radius:12px;padding:12px 15px;font-weight:750;font
 "use strict";
 const $=id=>document.getElementById(id);
 let port=null,reader=null,writer=null,readTask=null,connected=false,mode="serial",fadeMs=1500,authToken="";
-let audioContext=null,analyser=null,mediaStream=null,musicFrame=0,musicRunning=false,lastMusicSend=0,lastBeat=0,energyHistory=[],lastMusicLevels=[-1,-1],mixedStep=0;
+let audioContext=null,analyser=null,micStream=null,musicFrame=0,musicRunning=false,lastMusicSend=0,lastBeat=0,energyHistory=[],lastMusicLevels=[-1,-1],mixedStep=0;
 const decoder=new TextDecoder(),encoder=new TextEncoder();let pendingText="";
 const uiRampFrames=[0,0],ignoreStateUntil=[0,0],commandRevision=[0,0],shownPercent=[0,0];
 function showApp(){$("loginScreen").hidden=true;$("appShell").hidden=false}
@@ -120,23 +120,19 @@ function musicLevels(now){
 }
 async function startMusic(){
  if(!connected){log("Önce Arduino bağlantısını kur.");return}
- if(!navigator.mediaDevices?.getDisplayMedia||!window.isSecureContext){$("musicNote").textContent="Medya sesi yakalama için HTTPS ve ekran paylaşımı desteği gerekir.";return}
+ if(!navigator.mediaDevices?.getUserMedia||!window.isSecureContext){$("musicNote").textContent="Mikrofon için HTTPS veya localhost üzerinden açılan sayfa gerekir.";return}
  try{
-  mediaStream=await navigator.mediaDevices.getDisplayMedia({video:true,audio:true});
-  const audioTracks=mediaStream.getAudioTracks();
-  if(!audioTracks.length){mediaStream.getTracks().forEach(t=>t.stop());mediaStream=null;throw new Error("Paylaşımda sistem/sekme sesi seçilmedi veya tarayıcı medya sesini desteklemiyor. Tekrar deneyip ses paylaşımını aç.")}
+  micStream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:false,noiseSuppression:false,autoGainControl:false}});
   audioContext=new (window.AudioContext||window.webkitAudioContext)();await audioContext.resume();
   analyser=audioContext.createAnalyser();analyser.fftSize=1024;analyser.smoothingTimeConstant=.55;
-  audioContext.createMediaStreamSource(mediaStream).connect(analyser);
-  mediaStream.getVideoTracks().forEach(t=>t.addEventListener("ended",()=>{if(musicRunning)stopMusic()}));
-  audioTracks.forEach(t=>t.addEventListener("ended",()=>{if(musicRunning)stopMusic()}));
+  audioContext.createMediaStreamSource(micStream).connect(analyser);
   musicRunning=true;saveMusicSettings(true);$("musicState").textContent="DİNLİYOR";$("musicState").style.color="var(--green)";
-  $("musicStart").disabled=true;$("musicStop").disabled=false;$("musicNote").textContent="Medya sesi analiz ediliyor. Paylaşımı durdurduğunda müzik modu kapanır.";
+  $("musicStart").disabled=true;$("musicStop").disabled=false;$("musicNote").textContent="Mikrofon aktif. Müzik modunu durdurduğunda LED'ler söner.";
   const tick=now=>{if(!musicRunning)return;musicLevels(now);musicFrame=requestAnimationFrame(tick)};musicFrame=requestAnimationFrame(tick);
- }catch(e){$("musicNote").textContent="Medya sesi yakalanamadı: "+e.message}
+ }catch(e){$("musicNote").textContent="Mikrofon açılamadı: "+e.message}
 }
 async function stopMusic(){
- musicRunning=false;saveMusicSettings(false);if(musicFrame)cancelAnimationFrame(musicFrame);if(mediaStream)mediaStream.getTracks().forEach(t=>t.stop());mediaStream=null;
+ musicRunning=false;saveMusicSettings(false);if(musicFrame)cancelAnimationFrame(musicFrame);if(micStream)micStream.getTracks().forEach(t=>t.stop());micStream=null;
  if(audioContext){try{await audioContext.close()}catch{}audioContext=null}
  analyser=null;lastMusicLevels=[-1,-1];$("musicState").textContent="KAPALI";$("musicState").style.color="";
  $("musicStart").disabled=!connected;$("musicStop").disabled=true;
