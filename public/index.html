@@ -61,7 +61,8 @@ button,select{border:0;border-radius:12px;padding:12px 15px;font-weight:750;font
 <script>
 "use strict";
 const $=id=>document.getElementById(id);
-let port=null,reader=null,writer=null,readTask=null,connected=false,mode="serial",fadeMs=1500;\nlet audioContext=null,analyser=null,micStream=null,musicFrame=0,musicRunning=false,lastMusicSend=0,lastBeat=0,energyHistory=[],lastMusicLevels=[-1,-1],mixedStep=0;
+let port=null,reader=null,writer=null,readTask=null,connected=false,mode="serial",fadeMs=1500;
+let audioContext=null,analyser=null,micStream=null,musicFrame=0,musicRunning=false,lastMusicSend=0,lastBeat=0,energyHistory=[],lastMusicLevels=[-1,-1],mixedStep=0;
 const decoder=new TextDecoder(),encoder=new TextEncoder();let pendingText="";
 const uiRampFrames=[0,0],ignoreStateUntil=[0,0],commandRevision=[0,0],shownPercent=[0,0];
 function showApp(){$("loginScreen").hidden=true;$("appShell").hidden=false}
