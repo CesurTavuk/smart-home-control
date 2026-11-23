@@ -89,7 +89,7 @@ class PanelHandler(SimpleHTTPRequestHandler):
 
 
 async def serial_ws(websocket, path=None):
-    request_path = path or getattr(websocket, "path", "/")
+    request_path = path or getattr(websocket, "path", None) or getattr(getattr(websocket, "request", None), "path", "/")
     if request_path.split("?")[0] != "/serial":
         await websocket.close(code=1008, reason="Use /serial")
         return
