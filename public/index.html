@@ -177,9 +177,10 @@ async function startMusic(){
  try{
   micStream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:false,noiseSuppression:false,autoGainControl:false}});
   audioContext=new (window.AudioContext||window.webkitAudioContext)();await audioContext.resume();
-  analyser=audioContext.createAnalyser();analyser.fftSize=1024;analyser.smoothingTimeConstant=.55;
+  analyser=audioContext.createAnalyser();analyser.fftSize=2048;analyser.smoothingTimeConstant=.18;
   audioContext.createMediaStreamSource(micStream).connect(analyser);
-  energyHistory=[];micNoiseFloor=-58;micEnvelope=0;lastBeat=0;beatUntil=0;lastMusicSend=0;lastMusicLevels=[-1,-1];\n  musicRunning=true;saveMusicSettings(true);$("musicState").textContent="DİNLİYOR";$("musicState").style.color="var(--green)";
+  energyHistory=[];micNoiseFloor=-58;micEnvelope=0;lastBeat=0;beatUntil=0;lastMusicSend=0;lastMusicLevels=[-1,-1];
+  musicRunning=true;saveMusicSettings(true);$("musicState").textContent="DİNLİYOR";$("musicState").style.color="var(--green)";
   $("musicStart").disabled=true;$("musicStop").disabled=false;$("musicNote").textContent="Mikrofon aktif. Müzik modunu durdurduğunda LED'ler söner.";
   const tick=now=>{if(!musicRunning)return;musicLevels(now);musicFrame=requestAnimationFrame(tick)};musicFrame=requestAnimationFrame(tick);
  }catch(e){$("musicNote").textContent="Mikrofon açılamadı: "+e.message}
