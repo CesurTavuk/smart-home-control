@@ -61,12 +61,12 @@ button,select{border:0;border-radius:12px;padding:12px 15px;font-weight:750;font
 <script>
 "use strict";
 const $=id=>document.getElementById(id);
-let port=null,reader=null,writer=null,readTask=null,connected=false,mode="serial",fadeMs=1500;
+let port=null,reader=null,writer=null,readTask=null,connected=false,mode="serial",fadeMs=1500,authToken="";
 let audioContext=null,analyser=null,micStream=null,musicFrame=0,musicRunning=false,lastMusicSend=0,lastBeat=0,energyHistory=[],lastMusicLevels=[-1,-1],mixedStep=0;
 const decoder=new TextDecoder(),encoder=new TextEncoder();let pendingText="";
 const uiRampFrames=[0,0],ignoreStateUntil=[0,0],commandRevision=[0,0],shownPercent=[0,0];
 function showApp(){$("loginScreen").hidden=true;$("appShell").hidden=false}
-function showLogin(){$("appShell").hidden=true;$("loginScreen").hidden=false}
+function showLogin(){authToken="";$("appShell").hidden=true;$("loginScreen").hidden=false}
 $("loginForm").addEventListener("submit",async e=>{
  e.preventDefault();const btn=$("loginSubmit"),err=$("loginError");err.textContent="";btn.disabled=true;btn.textContent="KONTROL EDİLİYOR…";
  try{
@@ -75,7 +75,7 @@ $("loginForm").addEventListener("submit",async e=>{
   const response=await fetch("/api/state",{method:"GET",headers:{"Authorization":"Bearer "+password},cache:"no-store"});
   const data=await response.json().catch(()=>({}));
   if(!response.ok||data.ok!==true||!data.target)throw new Error(data.error||"Giriş bilgileri doğrulanamadı.");
-  $("loginPass").value="";showApp();
+  authToken=password;$("loginPass").value="";showApp();
  }catch(error){err.textContent=error.message.includes("Failed to fetch")?"Sunucuya ulaşılamadı. Cloudflare sunucu bağlantısını kontrol et.":error.message}
  finally{btn.disabled=false;btn.textContent="GİRİŞ YAP"}
 });
@@ -99,6 +99,7 @@ $("connect").addEventListener("click",()=>{if("serial" in navigator)connectUSB()
 $("logout").addEventListener("click",async()=>{if(connected)await disconnect();showLogin()});
 document.querySelectorAll("[data-action]").forEach(b=>b.addEventListener("click",()=>commandChannel(+b.dataset.ch,b.dataset.action==="ON"?100:0)));document.querySelectorAll("[data-set]").forEach(b=>b.addEventListener("click",()=>commandChannel(+b.dataset.set,+b.dataset.value)));[1,2].forEach(ch=>{$("slider"+ch).addEventListener("input",e=>$("value"+ch).textContent=e.target.value);$("slider"+ch).addEventListener("change",e=>commandChannel(ch,+e.target.value))});
 
+async function saveMusicSettings(enabled){if(!authToken)return;try{await fetch("/api/music",{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+authToken},body:JSON.stringify({mode:$("musicMode").value,sensitivity:Number($("sensitivity").value),enabled:!!enabled})})}catch(e){log("Müzik ayarı sunucuya kaydedilemedi: "+e.message)}}
 function musicSet(ch,pct){pct=Math.max(0,Math.min(100,Math.round(pct)));if(lastMusicLevels[ch-1]===pct)return;lastMusicLevels[ch-1]=pct;send("SET "+ch+" "+pct+" 0")}
 function musicLevels(now){
  const data=new Uint8Array(analyser.frequencyBinCount);analyser.getByteFrequencyData(data);
@@ -125,20 +126,20 @@ async function startMusic(){
   audioContext=new (window.AudioContext||window.webkitAudioContext)();await audioContext.resume();
   analyser=audioContext.createAnalyser();analyser.fftSize=1024;analyser.smoothingTimeConstant=.55;
   audioContext.createMediaStreamSource(micStream).connect(analyser);
-  musicRunning=true;$("musicState").textContent="DİNLİYOR";$("musicState").style.color="var(--green)";
+  musicRunning=true;saveMusicSettings(true);$("musicState").textContent="DİNLİYOR";$("musicState").style.color="var(--green)";
   $("musicStart").disabled=true;$("musicStop").disabled=false;$("musicNote").textContent="Mikrofon aktif. Müzik modunu durdurduğunda LED'ler söner.";
   const tick=now=>{if(!musicRunning)return;musicLevels(now);musicFrame=requestAnimationFrame(tick)};musicFrame=requestAnimationFrame(tick);
  }catch(e){$("musicNote").textContent="Mikrofon açılamadı: "+e.message}
 }
 async function stopMusic(){
- musicRunning=false;if(musicFrame)cancelAnimationFrame(musicFrame);if(micStream)micStream.getTracks().forEach(t=>t.stop());micStream=null;
+ musicRunning=false;saveMusicSettings(false);if(musicFrame)cancelAnimationFrame(musicFrame);if(micStream)micStream.getTracks().forEach(t=>t.stop());micStream=null;
  if(audioContext){try{await audioContext.close()}catch{}audioContext=null}
  analyser=null;lastMusicLevels=[-1,-1];$("musicState").textContent="KAPALI";$("musicState").style.color="";
  $("musicStart").disabled=!connected;$("musicStop").disabled=true;
  if(connected){await send("SET 1 0 0");await send("SET 2 0 0")}
 }
 $("musicStart").addEventListener("click",startMusic);$("musicStop").addEventListener("click",stopMusic);
-$("sensitivity").addEventListener("input",e=>$("sensitivityValue").textContent=e.target.value);
+$("sensitivity").addEventListener("input",e=>{$("sensitivityValue").textContent=e.target.value;saveMusicSettings(musicRunning)});$("musicMode").addEventListener("change",()=>saveMusicSettings(musicRunning));
 
 if("serial" in navigator){$("browserNote").textContent="Masaüstü Chrome/Edge: doğrudan USB seri. Bir terminal programı aynı COM portunu açıksa kapat; aynı portu iki uygulama eşzamanlı kullanamaz."}else{$("browserNote").textContent="navigator.serial bu tarayıcıda bulunamadı. Android Chrome resmi Web Serial desteğine sahip değil; Android’de ayrıca USB→WebSocket köprüsü gerekir."}
 navigator.serial?.addEventListener("disconnect",()=>{if(connected&&mode==="serial")disconnect()});setConnected(false);
