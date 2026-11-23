@@ -3,6 +3,12 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "$0")" && pwd)"
 cd "$ROOT"
 python3 -m venv .venv
+if [ ! -f /etc/smart-home-control.env ]; then
+  read -rsp "Mevcut CONTROL_TOKEN değerini gir: " CONTROL_TOKEN
+  echo
+  printf 'CONTROL_TOKEN=%s\n' "$CONTROL_TOKEN" | sudo tee /etc/smart-home-control.env >/dev/null
+  sudo chmod 600 /etc/smart-home-control.env
+fi
 "$ROOT/.venv/bin/pip" install --upgrade pip
 "$ROOT/.venv/bin/pip" install -r requirements-pardus.txt
 sudo tee /etc/systemd/system/smart-home-control.service >/dev/null <<EOF
@@ -12,6 +18,7 @@ After=network.target
 
 [Service]
 Type=simple
+EnvironmentFile=/etc/smart-home-control.env
 WorkingDirectory=$ROOT
 ExecStart=$ROOT/.venv/bin/python $ROOT/pardus_server.py --host 0.0.0.0 --ws-host 0.0.0.0 --port auto
 Restart=on-failure
