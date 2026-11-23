@@ -16,6 +16,7 @@ ROOT = Path(__file__).resolve().parent
 PUBLIC = ROOT / "public"
 serial_port = None
 serial_lock = threading.Lock()
+music_state = {"mode": "rhythm", "sensitivity": 6, "enabled": False}
 
 
 def choose_port(requested):
@@ -43,7 +44,7 @@ class PanelHandler(SimpleHTTPRequestHandler):
                 "ok": True,
                 "target": {"led1": {"on": False, "brightness": 100}, "led2": {"on": False, "brightness": 100}},
                 "actual": {"led1": {"on": False, "brightness": 0}, "led2": {"on": False, "brightness": 0}},
-                "music": {"mode": "rhythm", "sensitivity": 6, "enabled": False}
+                "music": music_state.copy()
             })
             return
         return super().do_GET()
@@ -56,6 +57,29 @@ class PanelHandler(SimpleHTTPRequestHandler):
         self.send_header("Content-Length", str(len(body)))
         self.end_headers()
         self.wfile.write(body)
+
+    def do_POST(self):
+        path = self.path.split("?", 1)[0]
+        if path != "/api/music":
+            self.send_json({"ok": False, "error": "Adres bulunamadı."}, 404)
+            return
+        token = os.environ.get("CONTROL_TOKEN", "")
+        if not token or self.headers.get("Authorization") != "Bearer " + token:
+            self.send_json({"ok": False, "error": "Kontrol şifresi hatalı veya eksik."}, 401)
+            return
+        try:
+            length = int(self.headers.get("Content-Length", "0"))
+            body = json.loads(self.rfile.read(length) or b"{}")
+            modes = {"rhythm", "breathe", "strobe", "wave", "mixed"}
+            mode = str(body.get("mode", music_state["mode"]))
+            sensitivity = int(body.get("sensitivity", music_state["sensitivity"]))
+            if mode not in modes or not 1 <= sensitivity <= 10:
+                self.send_json({"ok": False, "error": "Müzik modu veya hassasiyet geçersiz."}, 400)
+                return
+            music_state.update({"mode": mode, "sensitivity": sensitivity, "enabled": body.get("enabled") is True})
+            self.send_json({"ok": True, "music": music_state.copy()})
+        except Exception as exc:
+            self.send_json({"ok": False, "error": str(exc)}, 400)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, directory=str(PUBLIC), **kwargs)
