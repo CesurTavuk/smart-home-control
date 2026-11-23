@@ -10,10 +10,11 @@ Mevcut iki tek renkli LED kanalını Arduino üzerinden kontrol eden web paneli.
 
 ## Pardus kurulumu
 1. Depoyu Pardus bilgisayarına klonla.
-2. Terminalde depo klasörüne gir.
-3. `bash install-pardus.sh` komutunu çalıştır ve mevcut `CONTROL_TOKEN` değerini gir.
-4. Arduino'yu USB ile bağla.
-5. Tarayıcıda `http://127.0.0.1:8080` adresini aç.
+2. Gerekirse `sudo apt install python3-venv python3-pip` komutuyla Python kurulum araçlarını yükle.
+3. Terminalde depo klasörüne gir.
+4. `bash install-pardus.sh` komutunu çalıştır ve mevcut `CONTROL_TOKEN` değerini gir.
+5. Arduino'yu USB ile bağla.
+6. Tarayıcıda `http://127.0.0.1:8080` adresini aç.
 
 Servis yönetimi:
 - `sudo systemctl status smart-home-control`
