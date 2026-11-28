@@ -19,8 +19,8 @@ import android.hardware.usb.UsbManager
 import android.media.AudioAttributes
 import android.media.AudioFormat
 import android.media.AudioRecord
-import android.media.MediaProjection
-import android.media.MediaProjectionManager
+import android.media.projection.MediaProjection
+import android.media.projection.MediaProjectionManager
 import android.os.Build
 import android.os.Bundle
 import android.os.SystemClock
@@ -36,7 +36,6 @@ import android.widget.SeekBar
 import android.widget.Spinner
 import android.widget.TextView
 import android.widget.Toast
-import androidx.core.content.ContextCompat
 import com.hoho.android.usbserial.driver.UsbSerialPort
 import com.hoho.android.usbserial.driver.UsbSerialProber
 import java.io.BufferedReader
@@ -121,7 +120,7 @@ class MainActivity : Activity() {
         root = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
             setPadding(dp(18), dp(18), dp(18), dp(18))
-            setBackgroundColor(background)
+            setBackgroundColor(this@MainActivity.background)
         }
         setContentView(root)
     }
