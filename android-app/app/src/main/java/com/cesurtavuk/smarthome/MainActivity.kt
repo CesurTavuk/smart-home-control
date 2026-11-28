@@ -79,6 +79,7 @@ class MainActivity : Activity() {
     private var pairedDevices: List<BluetoothDevice> = emptyList()
     private var readerThread: Thread? = null
     private var receiverRegistered = false
+    private var pendingUsbDeviceId: Int? = null
     private var projection: MediaProjection? = null
     private var audioRecord: AudioRecord? = null
     @Volatile private var audioRunning = false
@@ -95,7 +96,7 @@ class MainActivity : Activity() {
         override fun onReceive(context: Context, intent: Intent) {
             if (intent.action != usbPermissionAction) return
             val granted = intent.getBooleanExtra(UsbManager.EXTRA_PERMISSION_GRANTED, false)
-            if (granted) openUsbDevice() else toast("USB bağlantı izni verilmedi.")
+            if (granted) openUsbDevice(pendingUsbDeviceId) else toast("USB bağlantı izni verilmedi.")
         }
     }
 
@@ -265,7 +266,7 @@ class MainActivity : Activity() {
         }
 
         page.addView(sectionTitle("🎵 MEDYA SESİNDEN MÜZİK MODU"))
-        page.addView(text("Mikrofon girişi açılmaz. Android'in medya oynatma yakalama özelliği kullanılır. Bazı uygulamalar ses yakalamayı engelleyebilir.", 12f, muted), matchWrap())
+        page.addView(text("Mikrofon girişi açılmaz. Android medya oynatma yakalama özelliği kullanılır. Android, bu API için RECORD_AUDIO izin adını zorunlu tutar; bazı uygulamalar ses yakalamayı engelleyebilir.", 12f, muted), matchWrap())
         musicMode = Spinner(this).apply {
             adapter = ArrayAdapter(this@MainActivity, android.R.layout.simple_spinner_dropdown_item,
                 listOf("Ritim", "Nefes", "Strobe", "Dalga", "Karışık"))
@@ -338,6 +339,7 @@ class MainActivity : Activity() {
             val driver = drivers.getOrNull(deviceSpinner.selectedItemPosition) ?: drivers.first()
             if (manager.hasPermission(driver.device)) openUsb(driver)
             else {
+                pendingUsbDeviceId = driver.device.deviceId
                 val intent = PendingIntent.getBroadcast(this, 0, Intent(usbPermissionAction).setPackage(packageName),
                     PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_MUTABLE)
                 manager.requestPermission(driver.device, intent)
@@ -357,9 +359,10 @@ class MainActivity : Activity() {
         }
     }
 
-    private fun openUsbDevice() {
+    private fun openUsbDevice(deviceId: Int?) {
         val manager = getSystemService(USB_SERVICE) as UsbManager
-        val driver = UsbSerialProber.getDefaultProber().findAllDrivers(manager).firstOrNull()
+        val drivers = UsbSerialProber.getDefaultProber().findAllDrivers(manager)
+        val driver = drivers.firstOrNull { it.device.deviceId == deviceId } ?: drivers.firstOrNull()
         if (driver == null) {
             toast("USB seri sürücüsü bulunamadı.")
             return
@@ -415,7 +418,6 @@ class MainActivity : Activity() {
         Thread {
             try {
                 val socket = device.createRfcommSocketToServiceRecord(sppUuid)
-                btAdapter?.cancelDiscovery()
                 socket.connect()
                 btSocket = socket
                 connected = true
